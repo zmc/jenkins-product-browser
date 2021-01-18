@@ -1,5 +1,8 @@
+import { Route } from 'react-router-dom';
+
 import logo from './logo.svg';
 import './App.css';
+import Product from './pages/product';
 
 function App() {
   return (
@@ -18,6 +21,9 @@ function App() {
           Learn React
         </a>
       </header>
+      <Route path="/products/:product">
+        <Product />
+      </Route>
     </div>
   );
 }
