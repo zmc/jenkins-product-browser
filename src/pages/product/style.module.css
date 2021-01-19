@@ -1,15 +1,13 @@
 .version {
-  background-color: #eeeeee;
   padding: 5px;
-  border-bottom: 1px solid gray;
 }
 
-.buildList {
+.version > h2 {
+  margin-bottom: 5px;
 }
 
-.build {
-  display: flex;
-  width: auto;
+.buildGrid {
+  width: 100%;
 }
 
 .timestamp {
@@ -17,19 +15,21 @@
 }
 
 .success {
-  width: 45px;
   background-color: green;
   color: black;
 }
 
 .failure {
-  width: 45px;
   background-color: red;
   color: black;
 }
 
+.unknown {
+  background-color: white;
+  color: black;
+}
+
 .testResults {
-  margin-left: 5px;
   display: inline-flex;
 }
 

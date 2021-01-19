@@ -14,16 +14,17 @@ import styles from './style.module.css';
 
 function fetchProductData ({jobs}) {
   if ( typeof jobs === "string" ) { jobs = [jobs] }
-  console.log(`useJobData jobs: ${jobs}`);
-  const fetchJobData = async (job) => {
-    const depth = 50;
-    const url = `${conf.jenkins.api_url}/job/${job}/api/json?tree=name,property[parameterDefinitions[defaultParameterValue[name,value]]],builds[number,actions[parameters[name,value],failCount,skipCount,totalCount,urlName],building,result,timestamp]{0,${depth}}`;
-    const res = await fetch(url);
-    if ( ! res.ok ) throw new Error(res.statusText);
-    return res.json()
-  };
+  console.log(`fetchProductData jobs: ${jobs}`);
   return Promise.allSettled(jobs.map(job => fetchJobData(job)))
 };
+
+async function fetchJobData (job) {
+  const depth = 50;
+  const url = `${conf.jenkins.api_url}/job/${job}/api/json?tree=name,property[parameterDefinitions[defaultParameterValue[name,value]]],builds[number,actions[parameters[name,value],failCount,skipCount,totalCount,urlName],building,result,timestamp]{0,${depth}}`;
+  const res = await fetch(url);
+  if ( ! res.ok ) throw new Error(res.statusText);
+  return res.json()
+}
 
 function getVersions (product, jobData) {
   const productSettings = conf.products[product];
@@ -37,6 +38,7 @@ function getVersions (product, jobData) {
   });
   builds.forEach((build) => {
     const metadata = {
+      id: `${jobData.name}/${build.number}`,
       job: jobData.name,
       build: build.number,
       result: build.result,
@@ -95,59 +97,59 @@ function mergeVersions (product, partialVersions) {
   return flatVersions
 };
 
-// <DataGrid rows={props.builds} columns={columns} />
+const columns = [
+  { field: 'timestamp',
+    headerName: 'Time',
+    valueFormatter: ({value}) =>
+      format( new Date(value), 'yyyy-MM-dd HH:mm'),
+    width: 150,
+  },
+  { field: 'result', headerName: 'Result', width: 125,
+    valueFormatter: ({value}) => value? value: '?',
+    cellClassName: params => styles[params.value? params.value.toLowerCase() : 'unknown'],
+  },
+  { field: 'job', headerName: 'Job', width: 150 },
+  { field: 'build', headerName: 'Build' },
+  { field: 'testResults', headerName: 'Tests', width: 200,
+    renderCell: (params) => (<TestResults results={params.value} />)
+  },
+];
+
 function Version (props) {
+  const pageSize = 5;
+  const pagination = (props.builds.length > pageSize);
+  // Ideally minHeight would be 80, but anything under 140 seems to invoke:
+  // Warning: `Infinity` is an invalid value for the `minHeight` css style
+  // property.
+  const minHeight = 140;
+  let height = Math.max(
+    minHeight,
+    40 + 36 * Math.min(props.builds.length, pageSize)
+  );
+  if ( pagination ) height += 52;
   return (
     <div className={styles.version}>
       <h2>{props.value}</h2>
-      <div className={styles.buildList}>
-      { props.builds.map(item => (<Build key={`${item.job}/${item.build}`} data={item} />)) }
+      <div style={{ height: height, width: '100%' }}>
+        <div style={{ display: 'flex', height: '100%' }}>
+          <div style={{ flexGrow: 1 }}>
+            <DataGrid
+              rows={props.builds}
+              columns={columns}
+              density="compact"
+              pageSize={pageSize}
+              hideFooter={! pagination}
+            />
+          </div>
+        </div>
       </div>
     </div>
   )
 };
 
-function Build (props) {
-  const data = props.data;
-  const buildURL = `${conf.jenkins.url}/job/${data.job}/${data.build}`;
-  const timestamp = format(
-    new Date(data.timestamp),
-    'yyyy-MM-dd HH:mm'
-  )
-  return (
-    <div className={styles.build}>
-      <Result value={data.result} />
-      <span className={styles.timestamp}>{timestamp}</span>{' '}
-      <a href={buildURL}>
-        <span>{data.job}</span>#
-        <span>{data.build}</span>
-      </a>
-      { data.testResults && <TestResults results={data.testResults} /> }
-    </div>
-  )
-};
-
-const columns = [
-  { field: 'job', headerName: 'Job' },
-  { field: 'build', headerName: 'Build' },
-  { field: 'timestamp', headerName: 'Time' },
-  { field: 'result', headerName: 'Result' }
-];
-
-function Result (props) {
-  const status = props.value.toLowerCase();
-  var text;
-  if ( status === 'success' ) { text = "PASS" }
-  else if ( status === 'failure' ) { text = "FAIL" }
-  else { text = "????" };
-
-  return (
-    <span className={styles[status]}>{text}</span>
-  )
-};
-
 function TestResults (props) {
   const results = props.results;
+  if ( results === undefined ) return (<div />)
   return (
     <div className={styles.testResults}>
       { results.fail? (<div>{results.fail} fail</div>) : null }
@@ -157,7 +159,7 @@ function TestResults (props) {
   )
 }
 
-export default function Product (props) {
+export default function Product () {
   const params = useParams();
   const name = params.product;
   console.log(`Product name: ${name}`);
@@ -176,9 +178,7 @@ export default function Product (props) {
       )
     });
   }
-  if ( error ) return (
-    <p>error.message</p>
-  )
+  if ( error ) return ( <p>error.message</p> )
 
   return (
     <>
