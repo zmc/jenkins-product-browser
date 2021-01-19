@@ -1,0 +1,39 @@
+.version {
+  background-color: #eeeeee;
+  padding: 5px;
+  border-bottom: 1px solid gray;
+}
+
+.buildList {
+}
+
+.build {
+  display: flex;
+  width: auto;
+}
+
+.timestamp {
+  width: 10em;
+}
+
+.success {
+  width: 45px;
+  background-color: green;
+  color: black;
+}
+
+.failure {
+  width: 45px;
+  background-color: red;
+  color: black;
+}
+
+.testResults {
+  margin-left: 5px;
+  display: inline-flex;
+}
+
+.testResults > div {
+  margin-left: 3px;
+  margin-right: 3px;
+}
