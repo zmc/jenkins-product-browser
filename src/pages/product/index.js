@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { useAsync } from 'react-async';
+import { Async } from 'react-async';
 import format from 'date-fns/format';
 import differenceInDays from 'date-fns/differenceInDays';
 import compareDesc from 'date-fns/compareDesc';
@@ -185,18 +185,21 @@ export default function Product () {
   const name = params.product;
   console.log(`Product name: ${name}`);
   const jobs = Object.keys(conf.products[name].jobs);
-  const {data, error, isPending} = useAsync(
-    {promiseFn: fetchProductData, jobs, name}
-  );
-  if ( error ) return ( <p>error.message</p> )
-
   return (
-    <>
+    <Async promiseFn={fetchProductData} jobs={jobs} name={name}>
       <h1>Latest {name} builds</h1>
-      { isPending? <p>loading</p> : data.sorted.map(item => (
-          <Version key={item} value={item} builds={data.versions[item]} />
-        ))
-      }
-    </>
+      <Async.Pending>
+        <p>loading...</p>
+      </Async.Pending>
+      <Async.Fulfilled>
+        { data => data.sorted.map(item => (
+            <Version key={item} value={item} builds={data.versions[item]} />
+          ))
+        }
+      </Async.Fulfilled>
+      <Async.Rejected>
+        {error => (<p>{error}</p>)}
+      </Async.Rejected>
+    </Async>
   )
 };
