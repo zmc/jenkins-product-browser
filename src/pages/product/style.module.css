@@ -1,9 +1,6 @@
 .version {
-  padding: 5px;
-}
-
-.version > h2 {
-  margin-bottom: 5px;
+  margin-top: 20px;
+  margin-bottom: 10px;
 }
 
 .buildGrid {

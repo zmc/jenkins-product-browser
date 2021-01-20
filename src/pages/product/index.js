@@ -7,6 +7,8 @@ import coerce from 'semver/functions/coerce';
 import compare from 'semver/functions/compare';
 import merge from 'deepmerge';
 import { DataGrid } from '@material-ui/data-grid';
+import Link from '@material-ui/core/Link';
+import Typography from '@material-ui/core/Typography';
 
 
 import conf from '../../settings.js';
@@ -61,7 +63,9 @@ function getVersions (product, jobData) {
     const metadata = {
       id: `${jobData.name}/${build.number}`,
       job: jobData.name,
+      jobURL: `${conf.jenkins.url}/job/${jobData.name}`,
       build: build.number,
+      buildURL: `${conf.jenkins.url}/job/${jobData.name}/${build.number}`,
       result: build.result,
       timestamp: build.timestamp
     };
@@ -75,6 +79,7 @@ function getVersions (product, jobData) {
         total: testResults.totalCount,
         pass: testResults.totalCount - testResults.failCount - testResults.skipCount
       };
+      metadata.testResultsURL = `${metadata.buildURL}/testReport`;
     };
     // find the action object containing parameters
     const raw_params = build.actions.filter((item) => {
@@ -118,6 +123,14 @@ function mergeVersions (product, partialVersions) {
   return flatVersions
 };
 
+function GridLink ({url, children}) {
+  return (
+    <Link href={url} target="_blank">
+      {children}
+    </Link>
+  )
+}
+
 const columns = [
   { field: 'timestamp',
     headerName: 'Time',
@@ -129,10 +142,30 @@ const columns = [
     valueFormatter: ({value}) => value? value: '?',
     cellClassName: params => styles[params.value? params.value.toLowerCase() : 'unknown'],
   },
-  { field: 'job', headerName: 'Job', width: 150 },
-  { field: 'build', headerName: 'Build' },
+  { field: 'job_', headerName: 'Job', width: 150,
+    renderCell: (params) => (
+      <GridLink
+       params={params}
+       url={params.row.jobURL}
+      >{params.row.job}</GridLink>
+    ),
+  },
+  { field: 'build_', headerName: 'Build',
+    renderCell: (params) => (
+      <GridLink
+       params={params}
+       url={params.row.buildURL}
+      >{params.row.build}</GridLink>
+    ),
+    //valueGetter: (params) => params.getValue('buildURL'),
+  },
   { field: 'testResults', headerName: 'Tests', width: 200,
-    renderCell: (params) => (<TestResults results={params.value} />)
+    renderCell: (params) => (
+      <TestResults
+       results={params.getValue("testResults")}
+       url={params.row.testResultsURL}
+      />
+    ),
   },
 ];
 
@@ -150,7 +183,7 @@ function Version (props) {
   if ( pagination ) height += 52;
   return (
     <div className={styles.version}>
-      <h2>{props.value}</h2>
+      <Typography variant="h5">{props.value}</Typography>
       <div style={{ height: height, width: '100%' }}>
         <div style={{ display: 'flex', height: '100%' }}>
           <div style={{ flexGrow: 1 }}>
@@ -171,11 +204,16 @@ function Version (props) {
 function TestResults (props) {
   const results = props.results;
   if ( results === undefined ) return (<div />)
+  const resultsString = Object.keys(results).map(item => {
+    if ( item === "total" ) return null;
+    if (results[item]) return `${results[item]} ${item}`;
+    return null;
+  }).filter(item => item).join(", ");
   return (
     <div className={styles.testResults}>
-      { results.fail? (<div>{results.fail} fail</div>) : null }
-      { results.skip? (<div>{results.skip} skip</div>) : null }
-      { results.pass? (<div>{results.pass} pass</div>) : null }
+      <GridLink url={props.url}>
+        {resultsString}
+      </GridLink>
     </div>
   )
 }
@@ -187,7 +225,7 @@ export default function Product () {
   const jobs = Object.keys(conf.products[name].jobs);
   return (
     <Async promiseFn={fetchProductData} jobs={jobs} name={name}>
-      <h1>Latest {name} builds</h1>
+      <Typography variant="h3">Latest {name} builds</Typography>
       <Async.Pending>
         <p>loading...</p>
       </Async.Pending>
