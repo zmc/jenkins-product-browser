@@ -12,18 +12,38 @@ import { DataGrid } from '@material-ui/data-grid';
 import conf from '../../settings.js';
 import styles from './style.module.css';
 
-function fetchProductData ({jobs}) {
+function fetchProductData ({jobs, name}) {
   if ( typeof jobs === "string" ) { jobs = [jobs] }
   console.log(`fetchProductData jobs: ${jobs}`);
-  return Promise.allSettled(jobs.map(job => fetchJobData(job)))
+  return Promise.allSettled(jobs.map(async job => {
+    return fetchJobData(job)
+      .then(resp => {
+        if ( resp.ok ) return resp.json()
+        console.error(resp.statusText);
+      }).then(data => {
+        return getVersions(name, data)
+      })
+  }))
+  .then(resps => {
+    const partialVersions = resps.map(item => item.value);
+    let versions = mergeVersions(name, partialVersions);
+    mergeVersions(name, partialVersions);
+    // sort versions by their most recent build's timestamp
+    const sorted = Object.keys(versions).sort((a, b) => {
+      return compareDesc(
+        new Date(versions[a][0].timestamp),
+        new Date(versions[b][0].timestamp)
+      )
+    });
+    return {sorted, versions}
+  })
 };
 
 async function fetchJobData (job) {
   const depth = 50;
   const url = `${conf.jenkins.api_url}/job/${job}/api/json?tree=name,property[parameterDefinitions[defaultParameterValue[name,value]]],builds[number,actions[parameters[name,value],failCount,skipCount,totalCount,urlName],building,result,timestamp]{0,${depth}}`;
-  const res = await fetch(url);
-  if ( ! res.ok ) throw new Error(res.statusText);
-  return res.json()
+  const res = fetch(url);
+  return res
 }
 
 function getVersions (product, jobData) {
@@ -164,28 +184,18 @@ export default function Product () {
   const name = params.product;
   console.log(`Product name: ${name}`);
   const jobs = Object.keys(conf.products[name].jobs);
-  const {data, error, isPending} = useAsync({promiseFn: fetchProductData, jobs});
-  let versions = {};
-  let sorted = [];
-  if ( ! isPending ) {
-    const partialVersions = data.map(item => item.value).map(jobData => getVersions(name, jobData));
-    versions = mergeVersions(name, partialVersions);
-    // sort versions by their most recent build's timestamp
-    sorted = Object.keys(versions).sort((a, b) => {
-      return compareDesc(
-        new Date(versions[a][0].timestamp),
-        new Date(versions[b][0].timestamp)
-      )
-    });
-  }
+  const {data, error, isPending} = useAsync(
+    {promiseFn: fetchProductData, jobs, name}
+  );
   if ( error ) return ( <p>error.message</p> )
 
   return (
     <>
       <h1>Latest {name} builds</h1>
-      { sorted.map(item => (
-        <Version key={item} value={item} builds={versions[item]} />
-      )) }
+      { isPending? <p>loading</p> : data.sorted.map(item => (
+          <Version key={item} value={item} builds={data.versions[item]} />
+        ))
+      }
     </>
   )
 };
