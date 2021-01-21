@@ -10,6 +10,9 @@ function App() {
       <header className="App-header">
       </header>
       <div className="main">
+        <Route path="/" exact>
+          <Product name="ocs" />
+        </Route>
         <Route path="/products" exact>
           <ProductList />
         </Route>

@@ -218,9 +218,9 @@ function TestResults (props) {
   )
 }
 
-export default function Product () {
+export default function Product (props) {
   const params = useParams();
-  const name = params.product;
+  const name = params.product || props.name;
   console.log(`Product name: ${name}`);
   const jobs = Object.keys(conf.products[name].jobs);
   return (
