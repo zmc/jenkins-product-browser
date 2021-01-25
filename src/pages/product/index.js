@@ -81,21 +81,25 @@ function getVersions (product, jobData) {
       };
       metadata.testResultsURL = `${metadata.buildURL}/testReport`;
     };
-    // find the action object containing parameters
-    const raw_params = build.actions.filter((item) => {
-      return item._class === "hudson.model.ParametersAction" })[0].parameters;
-    // find the param containing the product version
-    let version_param = raw_params.filter(
-      item => item.name === jobSettings.version_param);
-    if ( ! version_param ) { return };
-    version_param = version_param[0];
-    const version = jobSettings.version_xform(version_param.value);
-    if ( jobSettings.version_exclude.includes(version) ) { return };
-    const xyz = coerce(version).raw;
-    if ( versions[xyz] === undefined ) { versions[xyz] = {} };
-    if ( versions[xyz][version] === undefined ) { versions[xyz][version] = {} };
-    metadata.version = version;
-    versions[xyz][version][`${jobData.name}_${build.number}`] = metadata;
+    if ( jobSettings.version_param ) {
+      // find the action object containing parameters
+      const raw_params = build.actions.filter((item) => {
+        return item._class === "hudson.model.ParametersAction" })[0].parameters;
+      // find the param containing the product version
+      let version_param = raw_params.filter(
+        item => item.name === jobSettings.version_param);
+      if ( ! version_param ) { return };
+      version_param = version_param[0];
+      const version_regex = new RegExp(jobSettings.version_regex || ":(.+)");
+      const version = version_regex.exec(version_param.value)[1];
+      const version_exclude = jobSettings.version_exclude || ["latest"];
+      if ( version_exclude.includes(version) ) { return };
+      const xyz = coerce(version).raw;
+      if ( versions[xyz] === undefined ) { versions[xyz] = {} };
+      if ( versions[xyz][version] === undefined ) { versions[xyz][version] = {} };
+      metadata.version = version;
+      versions[xyz][version][`${jobData.name}_${build.number}`] = metadata;
+    };
   })
   return versions;
 };
@@ -107,8 +111,8 @@ function mergeVersions (product, partialVersions) {
   Object.keys(versions).forEach((xyz) => {
     let devBuilds = Object.keys(versions[xyz]).sort(
       (a, b) => compare(b, a))
-    if ( settings.maxDevBuilds !== undefined ) {
-      devBuilds = devBuilds.slice(0, settings.maxDevBuilds);
+    if ( settings.max_dev_builds !== undefined ) {
+      devBuilds = devBuilds.slice(0, settings.max_dev_builds);
     }
     devBuilds.forEach((version) => {
       flatVersions[version] = Object.values(versions[xyz][version]);

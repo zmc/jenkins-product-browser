@@ -5,18 +5,14 @@ const conf = {
   },
   products: {
     ocs: {
-      maxDevBuilds: 1,
+      max_dev_builds: 1,
       age_limit: 30,
       jobs: {
         'ocs-ci': {
           version_param: "OCS_REGISTRY_IMAGE",
-          version_xform: (v) => { return v.split(':')[1] },
-          version_exclude: ["latest"]
         },
         'ocs-ci-kvm': {
           version_param: "OCS_REGISTRY_IMAGE",
-          version_xform: (v) => { return v.split(':')[1] },
-          version_exclude: ["latest"]
         }
       }
     }
