@@ -42,8 +42,9 @@ function fetchProductData ({jobs, name}) {
 };
 
 async function fetchJobData (job) {
-  const depth = 50;
-  const url = `${conf.jenkins.api_url}/job/${job}/api/json?tree=name,property[parameterDefinitions[defaultParameterValue[name,value]]],builds[number,actions[parameters[name,value],failCount,skipCount,totalCount,urlName],building,result,timestamp]{0,${depth}}`;
+  const maxBuilds = conf.jenkins.max_builds || undefined;
+  let url = `${conf.jenkins.api_url}/job/${job}/api/json?tree=name,property[parameterDefinitions[defaultParameterValue[name,value]]],builds[number,actions[parameters[name,value],failCount,skipCount,totalCount,urlName],building,result,timestamp]`;
+  if ( maxBuilds !== undefined ) { url += `{0,${maxBuilds}}` };
   const headers = { Accept: "application/json" }
   const res = fetch(url, {headers});
   return res
