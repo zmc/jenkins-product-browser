@@ -1,7 +1,8 @@
 const conf = {
   jenkins: {
     url: "https://storage-jenkins-csb-ceph.cloud.paas.psi.redhat.com",
-    api_url: "http://localhost:3000",
+    api_url: process.env.REACT_APP_API_URL ||
+      "http://localhost:3001",
     max_builds: 0,  // 0 or undefined -> unlimited
   },
   products: {
