@@ -183,7 +183,7 @@ function Version (props) {
   const minHeight = 140;
   let height = Math.max(
     minHeight,
-    40 + 36 * Math.min(props.builds.length, pageSize)
+    50 + 36 * Math.min(props.builds.length, pageSize)
   );
   if ( pagination ) height += 52;
   return (
