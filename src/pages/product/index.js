@@ -67,7 +67,7 @@ function getVersions (product, jobData) {
       jobURL: `${conf.jenkins.url}/job/${jobData.name}`,
       build: build.number,
       buildURL: `${conf.jenkins.url}/job/${jobData.name}/${build.number}`,
-      result: build.result,
+      status: build.building? 'running' : build.result.toLowerCase(),
       timestamp: build.timestamp
     };
     let testResults = build.actions.filter((item) => {
@@ -143,7 +143,7 @@ const columns = [
       format( new Date(value), 'yyyy-MM-dd HH:mm'),
     width: 150,
   },
-  { field: 'result', headerName: 'Result', width: 125,
+  { field: 'status', headerName: 'Status', width: 100,
     valueFormatter: ({value}) => value? value: '?',
     cellClassName: params => styles[params.value? params.value.toLowerCase() : 'unknown'],
   },

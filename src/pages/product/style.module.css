@@ -7,6 +7,10 @@
   width: 100%;
 }
 
+.data-container {
+  min-height: auto !important;
+}
+
 .timestamp {
   width: 10em;
 }
@@ -21,9 +25,10 @@
   color: black;
 }
 
+.running {
+}
+
 .unknown {
-  background-color: white;
-  color: black;
 }
 
 .testResults {
