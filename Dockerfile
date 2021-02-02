@@ -1,8 +1,7 @@
-FROM node:15-alpine
-WORKDIR /app
-COPY config-overrides.js package.json package-lock.json /app/
-COPY public/ /app/public/
-COPY src/ /app/src/
+FROM registry.access.redhat.com/ubi8/nodejs-14
+COPY config-overrides.js package.json package-lock.json ./
+COPY public/ ./public/
+COPY src/ ./src/
 RUN \
   ls -la && \
   npm install && \
