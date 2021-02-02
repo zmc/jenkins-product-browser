@@ -1,5 +1,4 @@
 module.exports = function override(config, env) {
-  console.log(config);
   if (!config.optimization.splitChunks.cacheGroups) {
     config.optimization.splitChunks.cacheGroups = {};
   }
