@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Async, useFetch } from 'react-async';
 import format from 'date-fns/format';
-import differenceInDays from 'date-fns/differenceInDays';
 import compareDesc from 'date-fns/compareDesc';
 import coerce from 'semver/functions/coerce';
 import compare from 'semver/functions/compare';
@@ -62,13 +61,7 @@ function getVersions (product, jobData) {
   const productSettings = conf.products[product];
   const jobSettings = productSettings.jobs[jobData.name];
   const versions = {};
-  // first, filter out build that are too old, if appropriate
-  let builds = jobData.builds.filter((item) => {
-    if ( productSettings.age_limit === undefined ) { return false };
-    const delta = differenceInDays(new Date(), new Date(item.timestamp));
-    return delta <= productSettings.age_limit;
-  });
-  builds.forEach((build) => {
+  jobData.builds.forEach((build) => {
     const metadata = {
       id: `${jobData.name}/${build.number}`,
       job: jobData.name,

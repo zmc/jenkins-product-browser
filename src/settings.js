@@ -11,7 +11,7 @@ const conf = {
   products: {
     ocs: {
       max_dev_builds: 1,
-      age_limit: 180,
+      age_limit: 180,  // TODO this is currently ignored
       jobs: {
         'ocs-ci': {
           version_param: "OCS_REGISTRY_IMAGE",
