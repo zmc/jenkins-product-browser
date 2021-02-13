@@ -31,7 +31,7 @@ function fetchProductData ({jobs, name}) {
         console.error(resp.statusText);
       }).then(data => {
         return getVersions(name, data)
-      })
+      }).catch(error => { console.error(error) });
   }))
   .then(resps => {
     const partialVersions = resps.map(item => item.value);
@@ -55,6 +55,14 @@ async function fetchJobData (job) {
   const headers = { Accept: "application/json" }
   const res = fetch(url, {headers});
   return res
+}
+
+async function fetchPipelineRunData ({job, build}) {
+  const url = `${conf.jenkins.api_url}/job/${job}/${build}/wfapi/`;
+  const res = fetch(url)
+    .then(resp => resp.json())
+    .catch(error => { console.error(error) })
+  return res;
 }
 
 function getVersions (product, jobData) {
@@ -165,6 +173,15 @@ const columns = [
     ),
     //valueGetter: (params) => params.getValue('buildURL'),
   },
+  { field: 'failedStage', headerName: 'Failed Stage', width: 200,
+    renderCell: (params) => (
+      <FailedStage
+        job={params.row.job}
+        build={params.row.build}
+        status={params.row.status}
+      />
+    )
+  },
   { field: 'testResults', headerName: 'Tests', width: 200,
     renderCell: (params) => (
       <TestResults
@@ -189,7 +206,6 @@ function Version (props) {
   );
   if ( pagination ) height += 52;
   function setOpen (x) {
-    console.log("set open");
     setContentsOpen(x) };
   return (
     <div className={styles.version}>
@@ -257,6 +273,23 @@ function BuildContents (props) {
         </DialogContent>
       </Dialog>
     </>
+  )
+}
+
+function FailedStage (props) {
+  if ( ! props.status || props.status.toLowerCase() !== "failure" ) {
+    return ""
+  }
+  return (
+    <Async promiseFn={fetchPipelineRunData} job={props.job} build={props.build}>
+      <Async.Fulfilled>
+        {(data) => {
+          const failed_stages = data.stages.filter(
+            stage => stage.status.toLowerCase() === "failed");
+          return failed_stages[0].name;
+        }}
+      </Async.Fulfilled>
+    </Async>
   )
 }
 
