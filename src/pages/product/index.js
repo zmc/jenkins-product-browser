@@ -58,11 +58,21 @@ async function fetchJobData (job) {
 }
 
 async function fetchPipelineRunData ({job, build}) {
-  const url = `${conf.jenkins.api_url}/job/${job}/${build}/wfapi/`;
-  const res = fetch(url)
-    .then(resp => resp.json())
-    .catch(error => { console.error(error) })
-  return res;
+  const headers = { Accept: "application/json" };
+  const pipelineFetch = await fetch(
+    `${conf.jenkins.api_url}/job/${job}/${build}/wfapi/`, { headers });
+  const pipelineData = await pipelineFetch.json();
+  const failed_stage = pipelineData.stages.filter(
+    stage => stage.status.toLowerCase() === "failed")[0];
+  const stageFetch = await fetch(
+    `${conf.jenkins.api_url}/${failed_stage._links.self.href}`, { headers });
+  const stageData = await stageFetch.json();
+  const consoleUrl = conf.jenkins.api_url + '/' +
+    stageData.stageFlowNodes[0]._links.console.href;
+  return {
+    name: failed_stage.name,
+    consoleUrl,
+  }
 }
 
 function getVersions (product, jobData) {
@@ -283,12 +293,16 @@ function FailedStage (props) {
   return (
     <Async promiseFn={fetchPipelineRunData} job={props.job} build={props.build}>
       <Async.Fulfilled>
-        {(data) => {
-          const failed_stages = data.stages.filter(
-            stage => stage.status.toLowerCase() === "failed");
-          return failed_stages[0].name;
-        }}
+        {(data) =>
+          <Link
+            href={data.consoleUrl}
+            target="_blank"
+          >{data.name}</Link>
+        }
       </Async.Fulfilled>
+      <Async.Rejected>
+        {(error) => { console.error(error) }}
+      </Async.Rejected>
     </Async>
   )
 }
