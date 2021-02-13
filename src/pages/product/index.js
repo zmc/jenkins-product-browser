@@ -67,7 +67,7 @@ async function fetchPipelineRunData ({job, build}) {
   const stageFetch = await fetch(
     `${conf.jenkins.api_url}/${failed_stage._links.self.href}`, { headers });
   const stageData = await stageFetch.json();
-  const consoleUrl = conf.jenkins.api_url + '/' +
+  const consoleUrl = conf.jenkins.url + '/' +
     stageData.stageFlowNodes[0]._links.console.href;
   return {
     name: failed_stage.name,
