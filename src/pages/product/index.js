@@ -21,7 +21,7 @@ import LinkIcon from '@material-ui/icons/Link';
 import conf from '../../settings.js';
 import styles from './style.module.css';
 
-function fetchProductData ({jobs, name}) {
+function fetchProductData ({jobs}) {
   if ( typeof jobs === "string" ) { jobs = [jobs] }
   console.log(`fetchProductData jobs: ${jobs}`);
   return Promise.allSettled(jobs.map(async job => {
@@ -29,24 +29,24 @@ function fetchProductData ({jobs, name}) {
       .then(resp => {
         if ( resp.ok ) return resp.json()
         console.error(resp.statusText);
-      }).then(data => {
-        return getVersions(name, data)
       }).catch(error => { console.error(error) });
   }))
   .then(resps => {
-    const partialVersions = resps.map(item => item.value);
-    let versions = mergeVersions(name, partialVersions);
-    mergeVersions(name, partialVersions);
-    // sort versions by their most recent build's timestamp
-    const sorted = Object.keys(versions).sort((a, b) => {
-      return compareDesc(
-        new Date(versions[a][0].timestamp),
-        new Date(versions[b][0].timestamp)
-      )
-    });
-    return {sorted, versions}
+    return resps.map(item => item.value);
   })
 };
+
+function transformProductData ({jobDataList, name}) {
+  const partialVersions = jobDataList.map(item => getVersions(name, item));
+  const versions = mergeVersions(name, partialVersions);
+  const sorted = Object.keys(versions).sort((a, b) => {
+    return compareDesc(
+      new Date(versions[a][0].timestamp),
+      new Date(versions[b][0].timestamp)
+    )
+  });
+  return {sorted, versions}
+}
 
 async function fetchJobData (job) {
   const maxBuilds = conf.jenkins.max_builds || undefined;
@@ -324,22 +324,30 @@ function TestResults (props) {
   )
 }
 
+function VersionList (props) {
+  const data = transformProductData({jobDataList: props.data, name: props.product});
+  return (
+    <>
+      { data.sorted.map(item => (
+        <Version key={item} value={item} builds={data.versions[item]} />
+      ))}
+    </>
+  )
+}
+
 export default function Product (props) {
   const params = useParams();
   const name = params.product || props.name;
   console.log(`Product name: ${name}`);
   const jobs = Object.keys(conf.products[name].jobs);
   return (
-    <Async promiseFn={fetchProductData} jobs={jobs} name={name}>
+    <Async promiseFn={fetchProductData} jobs={jobs}>
       <Typography variant="h3">Latest {name} builds</Typography>
       <Async.Pending>
         <p>loading...</p>
       </Async.Pending>
       <Async.Fulfilled>
-        { data => data.sorted.map(item => (
-            <Version key={item} value={item} builds={data.versions[item]} />
-          ))
-        }
+        { data => (<VersionList data={data} product={name} />) }
       </Async.Fulfilled>
       <Async.Rejected>
         {error => (<p>{error}</p>)}
