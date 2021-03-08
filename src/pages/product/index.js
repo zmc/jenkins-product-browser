@@ -64,6 +64,7 @@ async function fetchPipelineRunData ({job, build}) {
   const pipelineData = await pipelineFetch.json();
   const failed_stage = pipelineData.stages.filter(
     stage => stage.status.toLowerCase() === "failed")[0];
+  if ( failed_stage === undefined ) { return null };
   const stageFetch = await fetch(
     `${conf.jenkins.api_url}/${failed_stage._links.self.href}`, { headers });
   const stageData = await stageFetch.json();
@@ -293,11 +294,11 @@ function FailedStage (props) {
   return (
     <Async promiseFn={fetchPipelineRunData} job={props.job} build={props.build}>
       <Async.Fulfilled>
-        {(data) =>
+        {(data) => data?
           <Link
             href={data.consoleUrl}
             target="_blank"
-          >{data.name}</Link>
+          >{data.name}</Link> : null
         }
       </Async.Fulfilled>
       <Async.Rejected>
