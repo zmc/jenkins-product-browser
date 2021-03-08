@@ -5,6 +5,7 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
+import { ErrorBoundary } from 'react-error-boundary';
 
 import './index.css';
 import App from './App';
@@ -50,9 +51,20 @@ function Root () {
   )
 }
 
+function ErrorDisplay({error}) {
+  return (
+    <div role="alert">
+      <p>Whoops 🤦</p>
+      <pre>{error.message}</pre>
+    </div>
+  )
+}
+
 ReactDOM.render(
   <React.StrictMode>
-    <Root />
+    <ErrorBoundary FallbackComponent={ErrorDisplay}>
+      <Root />
+    </ErrorBoundary>
   </React.StrictMode>
   , document.getElementById('root')
 );
