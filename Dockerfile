@@ -6,6 +6,7 @@ RUN \
   ls -la && \
   npm install && \
   npm run build && \
+  rm -rf node_modules && \
   npm install -g serve
 EXPOSE 5000
 ENTRYPOINT ["/bin/sh"]
