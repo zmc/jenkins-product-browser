@@ -29,7 +29,10 @@ function fetchProductData ({jobs}) {
       .then(resp => {
         if ( resp.ok ) return resp.json()
         console.error(resp.statusText);
-      }).catch(error => { console.error(error) });
+      }).catch(error => {
+        console.error(error);
+        throw error;
+      });
   }))
   .then(resps => {
     return resps.map(item => item.value);
@@ -348,7 +351,18 @@ export default function Product (props) {
         <p>loading...</p>
       </Async.Pending>
       <Async.Fulfilled>
-        { data => (<VersionList data={data} product={name} />) }
+        { data => {
+            if ( ! data.every(i => i !== undefined) ) {
+                return (
+                  <Typography>
+                    Response from Jenkins was empty.
+                    This is a known issue; please try using Chrome.
+                  </Typography>
+                )
+            }
+            return (<VersionList data={data} product={name} />)
+          }
+        }
       </Async.Fulfilled>
       <Async.Rejected>
         {error => (<p>{error}</p>)}
