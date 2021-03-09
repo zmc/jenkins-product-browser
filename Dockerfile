@@ -1,5 +1,5 @@
 FROM registry.access.redhat.com/ubi8/nodejs-14
-COPY config-overrides.js package.json package-lock.json ./
+COPY package.json package-lock.json ./
 COPY public/ ./public/
 COPY src/ ./src/
 RUN \
