@@ -16,14 +16,13 @@ function useDarkMode () {
     '(prefers-color-scheme: dark)',
   );
   const [state, setState] = useState({system: systemDarkMode});
-  if ( state.user === undefined && systemDarkMode === true ) { setState({system: true, user: true}) };
 
   function setDarkMode (value) {
     const newState = {...state, user: value};
-    //if ( value !== state.user ) { setState(newState) };
+    if ( value !== state.user ) { setState(newState) };
     setState(newState);
   };
-  const darkMode = state.user
+  const darkMode = state.user === undefined? systemDarkMode : state.user;
   return [darkMode, setDarkMode]
 }
 
