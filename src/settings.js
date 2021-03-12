@@ -6,7 +6,7 @@ const conf = {
     max_builds: 0,  // 0 or undefined -> unlimited
   },
   ocs_metadata: {
-    api_url: "http://ocs-metadata-ocs-metadata.int.open.paas.redhat.com/",
+    api_url: "https://ocs-metadata.int.open.paas.redhat.com/",
   },
   products: {
     ocs: {
