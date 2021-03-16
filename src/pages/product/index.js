@@ -291,17 +291,20 @@ function BuildContents (props) {
 }
 
 function Stage (props) {
-  if ( ! props.status ||
-       ! ["failure", "running"].includes(props.status) ) {
+  const statuses = {
+    "failure": "failed",
+    "running": "in_progress",
+    "aborted": "aborted",
+  };
+  if ( ! props.status || statuses[props.status] === undefined ) {
     return ""
   }
-  const stage_status = props.status === "failure"? "failed": "in_progress";
   return (
     <Async
       promiseFn={fetchPipelineRunData}
       job={props.job}
       build={props.build}
-      status={stage_status}
+      status={statuses[props.status]}
     >
       <Async.Fulfilled>
         {(data) => data?
