@@ -60,21 +60,21 @@ async function fetchJobData (job) {
   return res
 }
 
-async function fetchPipelineRunData ({job, build}) {
+async function fetchPipelineRunData ({job, build, status}) {
   const headers = { Accept: "application/json" };
   const pipelineFetch = await fetch(
     `${conf.jenkins.api_url}/job/${job}/${build}/wfapi/`, { headers });
   const pipelineData = await pipelineFetch.json();
-  const failed_stage = pipelineData.stages.filter(
-    stage => stage.status.toLowerCase() === "failed")[0];
-  if ( failed_stage === undefined ) { return null };
+  const stage = pipelineData.stages.filter(
+    stage => stage.status.toLowerCase() === status)[0];
+  if ( stage === undefined ) { return null };
   const stageFetch = await fetch(
-    `${conf.jenkins.api_url}/${failed_stage._links.self.href}`, { headers });
+    `${conf.jenkins.api_url}/${stage._links.self.href}`, { headers });
   const stageData = await stageFetch.json();
   const consoleUrl = conf.jenkins.url + '/' +
     stageData.stageFlowNodes[0]._links.console.href;
   return {
-    name: failed_stage.name,
+    name: stage.name,
     consoleUrl,
   }
 }
@@ -187,9 +187,9 @@ const columns = [
     ),
     //valueGetter: (params) => params.getValue('buildURL'),
   },
-  { field: 'failedStage', headerName: 'Failed Stage', width: 200,
+  { field: 'stage', headerName: 'Stage', width: 200,
     renderCell: (params) => (
-      <FailedStage
+      <Stage
         job={params.row.job}
         build={params.row.build}
         status={params.row.status}
@@ -290,12 +290,19 @@ function BuildContents (props) {
   )
 }
 
-function FailedStage (props) {
-  if ( ! props.status || props.status.toLowerCase() !== "failure" ) {
+function Stage (props) {
+  if ( ! props.status ||
+       ! ["failure", "running"].includes(props.status) ) {
     return ""
   }
+  const stage_status = props.status === "failure"? "failed": "in_progress";
   return (
-    <Async promiseFn={fetchPipelineRunData} job={props.job} build={props.build}>
+    <Async
+      promiseFn={fetchPipelineRunData}
+      job={props.job}
+      build={props.build}
+      status={stage_status}
+    >
       <Async.Fulfilled>
         {(data) => data?
           <Link
