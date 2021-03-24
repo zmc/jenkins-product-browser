@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Async, useFetch } from 'react-async';
 import format from 'date-fns/format';
+import formatDistanceToNowStrict from 'date-fns/formatDistanceToNowStrict';
+import intervalToDuration from 'date-fns/intervalToDuration';
+import formatDuration from 'date-fns/formatDuration';
 import compareDesc from 'date-fns/compareDesc';
 import coerce from 'semver/functions/coerce';
 import compare from 'semver/functions/compare';
@@ -53,7 +56,7 @@ function transformProductData ({jobDataList, name}) {
 
 async function fetchJobData (job) {
   const maxBuilds = conf.jenkins.max_builds || undefined;
-  let url = `${conf.jenkins.api_url}/job/${job}/api/json?tree=name,property[parameterDefinitions[defaultParameterValue[name,value]]],builds[number,actions[parameters[name,value],failCount,skipCount,totalCount,urlName],building,result,timestamp]`;
+  let url = `${conf.jenkins.api_url}/job/${job}/api/json?tree=name,property[parameterDefinitions[defaultParameterValue[name,value]]],builds[number,actions[parameters[name,value],failCount,skipCount,totalCount,urlName],building,result,timestamp,duration]`;
   if ( maxBuilds !== undefined ) { url += `{0,${maxBuilds}}` };
   const headers = { Accept: "application/json" }
   const res = fetch(url, {headers});
@@ -91,7 +94,8 @@ function getVersions (product, jobData) {
       build: build.number,
       buildURL: `${conf.jenkins.url}/job/${jobData.name}/${build.number}`,
       status: build.building? 'running' : build.result.toLowerCase(),
-      timestamp: build.timestamp
+      timestamp: build.timestamp,
+      duration: build.duration,
     };
     let testResults = build.actions.filter((item) => {
       return item._class === "hudson.tasks.junit.TestResultAction" });
@@ -161,10 +165,24 @@ function GridLink ({url, children}) {
 
 const columns = [
   { field: 'timestamp',
-    headerName: 'Time',
-    valueFormatter: ({value}) =>
-      format( new Date(value), 'yyyy-MM-dd HH:mm'),
+    headerName: 'Started',
+    valueFormatter: ({value}) => format(new Date(value), 'yyyy-MM-dd HH:mm'),
     width: 150,
+  },
+  { field: 'duration',
+    headerName: 'Duration',
+    valueFormatter: (params) => {
+      if (! params.value) {
+        return formatDistanceToNowStrict(new Date(params.row.timestamp))
+      } else {
+        return formatDuration(
+          intervalToDuration(
+            {start: 0, end: params.value},
+          ),
+          {format: ['hours', 'minutes']}
+        )
+    }},
+    width: 175,
   },
   { field: 'status', headerName: 'Status', width: 100,
     valueFormatter: ({value}) => value? value: '?',
