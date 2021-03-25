@@ -36,7 +36,10 @@ function Root () {
 
   const getTheme = () => {
     const theme = createMuiTheme({palette: {type: paletteType}});
-    if ( darkMode ) theme.palette.background.default = "#181818";
+    if ( darkMode ) {
+      theme.palette.background.default = "#181818";
+      theme.palette.background.paper = "#303030";
+    }
     return theme
   }
   const theme = getTheme();
