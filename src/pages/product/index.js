@@ -74,8 +74,10 @@ async function fetchPipelineRunData ({job, build, status}) {
   const stageFetch = await fetch(
     `${conf.jenkins.api_url}/${stage._links.self.href}`, { headers });
   const stageData = await stageFetch.json();
+  const node = stageData.stageFlowNodes.filter(
+    node => node.status.toLowerCase() === status)[0];
   const consoleUrl = conf.jenkins.url + '/' +
-    stageData.stageFlowNodes[0]._links.console.href;
+    node._links.console.href;
   return {
     name: stage.name,
     consoleUrl,
