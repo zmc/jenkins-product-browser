@@ -1,0 +1,9 @@
+.testResults {
+  display: inline-flex;
+}
+
+.testResults > div {
+  margin-left: 3px;
+  margin-right: 3px;
+}
+
