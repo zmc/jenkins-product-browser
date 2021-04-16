@@ -1,4 +1,4 @@
-import { Route } from 'react-router-dom';
+import { Switch, Route } from 'react-router-dom';
 import AppBar from '@material-ui/core/AppBar';
 import IconButton from '@material-ui/core/IconButton';
 import Brightness4Icon from '@material-ui/icons/Brightness4';
@@ -34,15 +34,20 @@ function App(props) {
         </div>
       </AppBar>
       <div className="main">
-        <Route path="/" exact>
-          <Product name="ocs" />
-        </Route>
-        <Route path="/products" exact>
-          <ProductList />
-        </Route>
-        <Route path="/products/:product">
-          <Product />
-        </Route>
+        <Switch>
+          <Route path="/" exact>
+            <Product name="ocs" />
+          </Route>
+          <Route path="/products" exact>
+            <ProductList />
+          </Route>
+          <Route path="/products/:product/:version">
+            <Product />
+          </Route>
+          <Route path="/products/:product">
+            <Product />
+          </Route>
+        </Switch>
       </div>
     </div>
   );

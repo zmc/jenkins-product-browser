@@ -8,9 +8,10 @@ import { fetchProductData } from '../../lib/jenkins';
 
 
 export default function Product (props) {
-  const params = useParams();
-  const name = params.product || props.name;
+  const { product, version } = useParams();
+  const name = product || props.name;
   console.log(`Product name: ${name}`);
+  if ( version !== undefined ) { console.log(`Version filter: ${version}`) };
   const jobs = Object.keys(conf.products[name].jobs);
   return (
     <Async promiseFn={fetchProductData} jobs={jobs}>
@@ -28,7 +29,7 @@ export default function Product (props) {
                   </Typography>
                 )
             }
-            return (<VersionList data={data} product={name} />)
+            return (<VersionList data={data} product={name} version={version}/>)
           }
         }
       </Async.Fulfilled>

@@ -24,9 +24,18 @@ function fetchProductData ({jobs}) {
   })
 };
 
-function transformProductData ({jobDataList, name}) {
+function transformProductData ({jobDataList, name, versionFilter}) {
+  const settings = conf.products[name];
+  const maxDevBuilds = versionFilter === undefined? settings.max_dev_builds: -1;
   const partialVersions = jobDataList.map(item => getVersions(name, item));
-  const versions = mergeVersions(name, partialVersions);
+  let versions = mergeVersions(partialVersions, maxDevBuilds);
+  if ( versionFilter !== undefined ) {
+    versions = Object.keys(versions)
+      .filter(key => key.startsWith(versionFilter))
+      .reduce((obj, key) => {
+        return {...obj, [key]: versions[key]}
+      }, {});
+  }
   const sorted = Object.keys(versions).sort((a, b) => {
     return compareDesc(
       new Date(versions[a][0].timestamp),
@@ -116,15 +125,14 @@ function getVersions (product, jobData) {
   return versions;
 };
 
-function mergeVersions (product, partialVersions) {
-  const settings = conf.products[product];
+function mergeVersions (partialVersions, maxDevBuilds) {
   const versions = merge.all(partialVersions);
   const flatVersions = {};
   Object.keys(versions).forEach((xyz) => {
     let devBuilds = Object.keys(versions[xyz]).sort(
       (a, b) => compare(b, a))
-    if ( settings.max_dev_builds !== undefined ) {
-      devBuilds = devBuilds.slice(0, settings.max_dev_builds);
+    if ( maxDevBuilds > 0 ) {
+      devBuilds = devBuilds.slice(0, maxDevBuilds);
     }
     devBuilds.forEach((version) => {
       flatVersions[version] = Object.values(versions[xyz][version]);
