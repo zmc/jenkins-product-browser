@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useFetch } from 'react-async';
 
 import Dialog from '@material-ui/core/Dialog';
@@ -5,7 +6,6 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import Box from '@material-ui/core/Box';
 import Link from '@material-ui/core/Link';
-import LinkIcon from '@material-ui/icons/Link';
 import Typography from '@material-ui/core/Typography';
 
 import conf from '../../settings.js';
@@ -17,6 +17,10 @@ function BuildContents (props) {
   const url = `${conf.ocs_metadata.api_url}/builds/${props.build}`;
   const { data, error, isPending } = useFetch(url, { headers });
   const { open, setOpen } = props;
+  useEffect(() => {
+    if (data === undefined ) { return };
+    props.setProductBuildUrl(data.url);
+  }, [props, data])
   if ( isPending || error ) return null;
   return (
     <>
@@ -26,9 +30,12 @@ function BuildContents (props) {
         scroll="paper"
       >
         <DialogTitle>
-          {data.version}
-          <Link href={data.url} target="_blank" style={{paddingLeft: 20, verticalAlign: "text-top"}} color="inherit">
-            <LinkIcon />
+          <Link
+            href={data.url}
+            target="_blank"
+            style={{paddingLeft: 20, verticalAlign: "text-top"}}
+          >
+            {data.version}
           </Link>
         </DialogTitle>
         <DialogContent>

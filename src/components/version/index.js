@@ -4,6 +4,7 @@ import formatDistanceToNowStrict from 'date-fns/formatDistanceToNowStrict';
 import intervalToDuration from 'date-fns/intervalToDuration';
 import formatDuration from 'date-fns/formatDuration';
 
+import Link from '@material-ui/core/Link';
 import Typography from '@material-ui/core/Typography';
 import { DataGrid } from '@material-ui/data-grid';
 import IconButton from '@material-ui/core/IconButton';
@@ -79,6 +80,7 @@ const columns = [
 
 function Version (props) {
   const [ contentsOpen, setContentsOpen ] = useState(false);
+  const [ productBuildUrl, setProductBuildUrl ] = useState();
   const pageSize = 5;
   const pagination = (props.builds.length > pageSize);
   // Ideally minHeight would be 80, but anything under 140 seems to invoke:
@@ -90,22 +92,29 @@ function Version (props) {
     50 + 36 * Math.min(props.builds.length, pageSize)
   );
   if ( pagination ) height += 52;
-  function setOpen (x) {
-    setContentsOpen(x) };
   return (
     <div className={styles.version}>
       <div style={{display: "flex", justifyContent: "space-between"}}>
-        <Typography variant="h5" component="span" style={{padding: 5}} >{props.value}</Typography>
+        <Typography variant="h5" component="span" style={{padding: 5}} >
+          <Link href={productBuildUrl} target="_blank">
+            {props.value}
+          </Link>
+        </Typography>
         <div style={{textAlign: "end"}}>
           <IconButton
-            onClick={() => { setOpen(true) }}
+            onClick={() => { setContentsOpen(true) }}
             style={{marginTop: -5}}
           >
             <FormatListBulleted />
           </IconButton>
         </div>
       </div>
-      <BuildContents open={contentsOpen} setOpen={setOpen} build={props.value} />
+      <BuildContents
+        open={contentsOpen}
+        setOpen={setContentsOpen}
+        build={props.value}
+        setProductBuildUrl={setProductBuildUrl}
+      />
       <div style={{ height: height, width: '100%' }}>
         <div style={{ display: 'flex', height: '100%' }}>
           <div style={{ flexGrow: 1 }}>
