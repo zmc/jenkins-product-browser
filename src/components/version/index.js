@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAsync } from "react-async"
 import format from 'date-fns/format';
 import formatDistanceToNowStrict from 'date-fns/formatDistanceToNowStrict';
 import intervalToDuration from 'date-fns/intervalToDuration';
@@ -10,6 +11,7 @@ import { DataGrid } from '@material-ui/data-grid';
 import IconButton from '@material-ui/core/IconButton';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 
+import { fetchProductBuilds } from '../../lib/jenkins';
 import BuildContents from '../build_contents';
 import GridLink from '../grid_link';
 import Stage from '../stage';
@@ -81,15 +83,25 @@ const columns = [
 function Version (props) {
   const [ contentsOpen, setContentsOpen ] = useState(false);
   const [ productBuildUrl, setProductBuildUrl ] = useState();
+  const { data, error, isPending } = useAsync(
+    { promiseFn: fetchProductBuilds, product: props.product, version: props.value})
+  if ( error ) {
+    console.error(error);
+    return null;
+  }
+  if ( isPending ) {
+    return (<p>loading...</p>);
+  }
+  const short_version = props.value.split(':')[1];
   const pageSize = 5;
-  const pagination = (props.builds.length > pageSize);
+  const pagination = (data.length > pageSize);
   // Ideally minHeight would be 80, but anything under 140 seems to invoke:
   // Warning: `Infinity` is an invalid value for the `minHeight` css style
   // property.
   const minHeight = 140;
   let height = Math.max(
     minHeight,
-    50 + 36 * Math.min(props.builds.length, pageSize)
+    50 + 36 * Math.min(data.length, pageSize)
   );
   if ( pagination ) height += 52;
   return (
@@ -97,7 +109,7 @@ function Version (props) {
       <div style={{display: "flex", justifyContent: "space-between"}}>
         <Typography variant="h5" component="span" style={{padding: 5}} >
           <Link href={productBuildUrl} target="_blank">
-            {props.value}
+            {short_version}
           </Link>
         </Typography>
         <div style={{textAlign: "end"}}>
@@ -112,14 +124,14 @@ function Version (props) {
       <BuildContents
         open={contentsOpen}
         setOpen={setContentsOpen}
-        build={props.value}
+        version={short_version}
         setProductBuildUrl={setProductBuildUrl}
       />
       <div style={{ height: height, width: '100%' }}>
         <div style={{ display: 'flex', height: '100%' }}>
           <div style={{ flexGrow: 1 }}>
             <DataGrid
-              rows={props.builds}
+              rows={data}
               columns={columns}
               density="compact"
               pageSize={pageSize}

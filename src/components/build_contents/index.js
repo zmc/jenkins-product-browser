@@ -12,16 +12,49 @@ import conf from '../../settings.js';
 import Image from '../image';
 
 
-function BuildContents (props) {
+function BuildContentsInner (props) {
   const headers = { Accept: "application/json" };
-  const url = `${conf.ocs_metadata.api_url}/builds/${props.build}`;
+  const url = `${conf.ocs_metadata.api_url}/builds/${props.version}`;
   const { data, error, isPending } = useFetch(url, { headers });
-  const { open, setOpen } = props;
   useEffect(() => {
     if (data === undefined ) { return };
-    props.setProductBuildUrl(data.url);
+    props.setData(data);
   }, [props, data])
   if ( isPending || error ) return null;
+  return (
+    <>
+      <DialogTitle>
+        <Link
+          href={data.url}
+          target="_blank"
+          style={{paddingLeft: 20, verticalAlign: "text-top"}}
+        >
+          {data.version}
+        </Link>
+      </DialogTitle>
+      <DialogContent>
+        { data.contents.map((item) => (
+          <Box
+            key={item.name}
+            style={{overflow: "visible", marginBottom: 20}}
+          >
+            <Typography variant="h6">{item.name}</Typography>
+            <Typography>tag: {item.tag}</Typography>
+            <Image data={item.image} />
+            <Typography>NVR: {item.nvr}</Typography>
+          </Box>
+        ))}
+      </DialogContent>
+    </>
+  )
+}
+
+
+function BuildContents (props) {
+  const { open, setOpen } = props;
+  const setData = (data) => {
+    props.setProductBuildUrl(data.url);
+  };
   return (
     <>
       <Dialog
@@ -29,28 +62,7 @@ function BuildContents (props) {
         onClose={() => { setOpen(false) }}
         scroll="paper"
       >
-        <DialogTitle>
-          <Link
-            href={data.url}
-            target="_blank"
-            style={{paddingLeft: 20, verticalAlign: "text-top"}}
-          >
-            {data.version}
-          </Link>
-        </DialogTitle>
-        <DialogContent>
-          { data.contents.map((item) => (
-            <Box
-              key={item.name}
-              style={{overflow: "visible", marginBottom: 20}}
-            >
-              <Typography variant="h6">{item.name}</Typography>
-              <Typography>tag: {item.tag}</Typography>
-              <Image data={item.image} />
-              <Typography>NVR: {item.nvr}</Typography>
-            </Box>
-          ))}
-        </DialogContent>
+        <BuildContentsInner version={props.version} setData={setData} />
       </Dialog>
     </>
   )

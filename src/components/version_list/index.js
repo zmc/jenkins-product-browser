@@ -1,16 +1,22 @@
-import { transformProductData } from '../../lib/jenkins';
+import { useAsync } from "react-async"
+import { useParams } from 'react-router-dom';
+
+import { fetchVersionLists } from '../../lib/jenkins';
 import Version from '../version';
 
 function VersionList (props) {
-  const data = transformProductData({
-    jobDataList: props.data,
-    name: props.product,
-    versionFilter: props.version,
-  });
+  const { version } = useParams();
+  const { data, error, isPending } = useAsync(
+    { promiseFn: fetchVersionLists, product: props.product, versionFilter: version })
+  if ( error ) {
+    console.error(error);
+    return <p>error!</p>
+  };
+  if ( isPending ) { return null };
   return (
     <>
-      { data.sorted.map(item => (
-        <Version key={item} value={item} builds={data.versions[item]} />
+      { data.map(item => (
+        <Version key={item} value={item} product={props.product}/>
       ))}
     </>
   )
