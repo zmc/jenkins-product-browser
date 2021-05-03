@@ -2,20 +2,3 @@
   margin-top: 20px;
   margin-bottom: 10px;
 }
-
-.success {
-  background-color: green;
-  color: black;
-}
-
-.failure {
-  background-color: red;
-  color: black;
-}
-
-.running {
-}
-
-.unknown {
-}
-
