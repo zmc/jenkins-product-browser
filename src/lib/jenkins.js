@@ -4,6 +4,13 @@ import convert from 'xml-js';
 import conf from '../settings.js';
 
 
+function getProductSettings (product) {
+  const matches = Object.keys(conf.products).filter(key => {
+    return key.toLowerCase() === product.toLowerCase();
+  });
+  if ( matches.length ) return conf.products[matches[0]];
+};
+
 async function fetchPipelineRunData ({job, build, status}) {
   const headers = { Accept: "application/json" };
   const pipelineFetch = await fetch(
@@ -26,7 +33,7 @@ async function fetchPipelineRunData ({job, build, status}) {
 }
 
 async function fetchVersionLists ({product, versionFilter}) {
-  const productSettings = conf.products[product];
+  const productSettings = getProductSettings(product);
   const jobs = Object.keys(productSettings.jobs);
   return Promise.all(jobs.map(async job => {
     const jobSettings = productSettings.jobs[job];
@@ -84,7 +91,7 @@ function transformVersionList ({product, versionList, versionFilter}) {
 }
 
 function fetchProductBuilds ({product, version}) {
-  const productSettings = conf.products[product];
+  const productSettings = getProductSettings(product);
   const jobs = Object.keys(productSettings.jobs);
   return Promise.allSettled(jobs.map(async job => {
     const version_param = productSettings.jobs[job].version_param
@@ -140,6 +147,7 @@ function getTestBuildMetadata (build) {
 
 export {
   fetchPipelineRunData,
-  fetchVersionLists,
   fetchProductBuilds,
+  fetchVersionLists,
+  getProductSettings,
 }
