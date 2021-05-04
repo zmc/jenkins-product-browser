@@ -36,7 +36,7 @@ function App(props) {
       <div className="main">
         <Switch>
           <Route path="/" exact>
-            <Product name="ocs" />
+            <Product name="OCS" />
           </Route>
           <Route path="/products" exact>
             <ProductList />

@@ -9,7 +9,7 @@ const conf = {
     api_url: "https://ocs-metadata.int.open.paas.redhat.com/",
   },
   products: {
-    ocs: {
+    OCS: {
       max_dev_builds: 1,
       age_limit: 180,  // TODO this is currently ignored
       jobs: {
