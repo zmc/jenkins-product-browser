@@ -25,16 +25,15 @@ async function fetchPipelineRunData ({job, build, status}) {
   }
 }
 
-function fetchVersionLists ({product, versionFilter}) {
+async function fetchVersionLists ({product, versionFilter}) {
   const productSettings = conf.products[product];
   const jobs = Object.keys(productSettings.jobs);
-  return Promise.allSettled(jobs.map(async job => {
+  return Promise.all(jobs.map(async job => {
     const jobSettings = productSettings.jobs[job];
     return fetchVersionList(job, jobSettings.version_param)
   }))
-  .then(resps => {
-    const lists = resps.map(item => item.value);
-    return Array.from(new Set(lists.flat()));
+  .then(values => {
+    return Array.from(new Set(values.flat()));
   })
   .then(versionList => {
     const newList = transformVersionList({product, versionList, versionFilter})
@@ -46,14 +45,10 @@ async function fetchXML (url) {
   return fetch(url)
     .then(resp => {
       if ( resp.ok ) return resp.text();
-      console.error(resp.statusText);
     }).then(xml => {
         return convert.xml2json(xml, {compact: true, nativeType: true});
     }).then(json => {
       return JSON.parse(json);
-    }).catch(error => {
-      console.error(error);
-      throw error;
     });
 }
 
