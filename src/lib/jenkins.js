@@ -4,6 +4,13 @@ import convert from 'xml-js';
 import conf from '../settings.js';
 
 
+function getUrl (url) {
+  if ( process.env.NODE_ENV === 'production' ) {
+    return `${conf.jenkins.api_url}/${url}`;
+  }
+  return url;
+}
+
 function getProductSettings (product) {
   const matches = Object.keys(conf.products).filter(key => {
     return key.toLowerCase() === product.toLowerCase();
@@ -14,13 +21,17 @@ function getProductSettings (product) {
 async function fetchPipelineRunData ({job, build, status}) {
   const headers = { Accept: "application/json" };
   const pipelineFetch = await fetch(
-    `${conf.jenkins.api_url}/job/${job}/${build}/wfapi/`, { headers });
+    getUrl(`/job/${job}/${build}/wfapi/`),
+    { headers }
+  );
   const pipelineData = await pipelineFetch.json();
   const stage = pipelineData.stages.filter(
     stage => stage.status.toLowerCase() === status)[0];
   if ( stage === undefined ) { return null };
   const stageFetch = await fetch(
-    `${conf.jenkins.api_url}/${stage._links.self.href}`, { headers });
+    getUrl(stage._links.self.href),
+    { headers }
+  );
   const stageData = await stageFetch.json();
   const node = stageData.stageFlowNodes.filter(
     node => node.status.toLowerCase() === status)[0];
@@ -49,7 +60,7 @@ async function fetchVersionLists ({product, versionFilter}) {
 };
 
 async function fetchXML (url) {
-  return fetch(url)
+  return fetch(url, {cache: "default"})
     .then(resp => {
       if ( resp.ok ) return resp.text();
     }).then(xml => {
@@ -60,7 +71,7 @@ async function fetchXML (url) {
 }
 
 async function fetchVersionList (job, version_param) {
-  const url = `${conf.jenkins.api_url}/job/${job}/api/xml?tree=builds[number,actions[parameters[name,value]]]&wrapper=root&xpath=//*/build/action/parameter[name[text()='${version_param}']]/value`;
+  const url = getUrl(`/job/${job}/api/xml?tree=builds[number,actions[parameters[name,value]]]&wrapper=root&xpath=//*/build/action/parameter[name[text()='${version_param}']]/value`);
   return fetchXML(url)
     .then(data => {
       return data.root.value.map(item => item._text);
@@ -106,7 +117,7 @@ function fetchProductBuilds ({product, version}) {
 };
 
 async function fetchBuilds ({job, version_param, version}) {
-  const url = `${conf.jenkins.api_url}/job/${job}/api/xml?tree=name,builds[number,actions[parameters[name,value],failCount,skipCount,totalCount,urlName],building,duration,result,timestamp]&wrapper=root&xpath=//*/build[action/parameter[name[text()='${version_param}']%20and%20value[text()='${version}']]]`;
+  const url = getUrl(`/job/${job}/api/xml?tree=name,builds[number,actions[parameters[name,value],failCount,skipCount,totalCount,urlName],building,duration,result,timestamp]&wrapper=root&xpath=//*/build[action/parameter[name[text()='${version_param}']%20and%20value[text()='${version}']]]`);
   return fetchXML(url)
     .then(data => {
       const builds = [data.root.build].flat(1);
