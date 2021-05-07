@@ -22,6 +22,7 @@ function BuildContentsInner (props) {
         <Link
           href={data.url}
           target="_blank"
+          rel="noopener noreferrer"
           style={{paddingLeft: 20, verticalAlign: "text-top"}}
         >
           {data.version}

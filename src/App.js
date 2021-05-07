@@ -26,6 +26,7 @@ function App(props) {
         <Link
           href="https://github.com/zmc/jenkins-product-browser"
           target="_blank"
+          rel="noopener noreferrer"
         >
           <IconButton>
             <GitHubIcon />

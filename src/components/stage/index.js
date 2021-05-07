@@ -26,6 +26,7 @@ function Stage (props) {
           <Link
             href={data.consoleUrl}
             target="_blank"
+            rel="noopener noreferrer"
           >{data.name}</Link> : null
         }
       </Async.Fulfilled>
