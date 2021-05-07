@@ -6,7 +6,7 @@ import conf from '../settings.js';
 
 function getUrl (url) {
   if ( process.env.NODE_ENV === 'production' ) {
-    return `${conf.jenkins.api_url}/${url}`;
+    return `${conf.jenkins.api_url}${url}`;
   }
   return url;
 }

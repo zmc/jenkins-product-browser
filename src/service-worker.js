@@ -58,7 +58,13 @@ registerRoute(
       // least-recently used images are removed.
       new ExpirationPlugin({ maxEntries: 50 }),
     ],
-  })
+  }),
+);
+registerRoute(
+  ({url}) => url.pathname.startsWith('/job/'),
+  new StaleWhileRevalidate({
+    cacheName: 'jobData',
+  }),
 );
 
 // This allows the web app to trigger skipWaiting via
