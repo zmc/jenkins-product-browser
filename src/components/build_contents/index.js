@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useFetch } from 'react-async';
 
 import Dialog from '@material-ui/core/Dialog';
@@ -16,10 +15,6 @@ function BuildContentsInner (props) {
   const headers = { Accept: "application/json" };
   const url = `${conf.ocs_metadata.api_url}/builds/${props.version}`;
   const { data, error, isPending } = useFetch(url, { headers });
-  useEffect(() => {
-    if (data === undefined ) { return };
-    props.setData(data);
-  }, [props, data])
   if ( isPending || error ) return null;
   return (
     <>
@@ -52,9 +47,6 @@ function BuildContentsInner (props) {
 
 function BuildContents (props) {
   const { open, setOpen } = props;
-  const setData = (data) => {
-    props.setProductBuildUrl(data.url);
-  };
   return (
     <>
       <Dialog
@@ -62,7 +54,7 @@ function BuildContents (props) {
         onClose={() => { setOpen(false) }}
         scroll="paper"
       >
-        <BuildContentsInner version={props.version} setData={setData} />
+        <BuildContentsInner version={props.version} />
       </Dialog>
     </>
   )
