@@ -1,4 +1,5 @@
 import coerce from 'semver/functions/coerce';
+import { useQuery, useQueries } from 'react-query';
 import convert from 'xml-js';
 
 import conf from '../settings.js';
@@ -18,47 +19,6 @@ function getProductSettings (product) {
   if ( matches.length ) return conf.products[matches[0]];
 };
 
-async function fetchPipelineRunData ({job, build, status}) {
-  const headers = { Accept: "application/json" };
-  const pipelineFetch = await fetch(
-    getUrl(`/job/${job}/${build}/wfapi/`),
-    { headers }
-  );
-  const pipelineData = await pipelineFetch.json();
-  const stage = pipelineData.stages.filter(
-    stage => stage.status.toLowerCase() === status)[0];
-  if ( stage === undefined ) { return null };
-  const stageFetch = await fetch(
-    getUrl(stage._links.self.href),
-    { headers }
-  );
-  const stageData = await stageFetch.json();
-  const node = stageData.stageFlowNodes.filter(
-    node => node.status.toLowerCase() === status)[0];
-  const consoleUrl = conf.jenkins.url + '/' +
-    node._links.console.href;
-  return {
-    name: stage.name,
-    consoleUrl,
-  }
-}
-
-async function fetchVersionLists ({product, versionFilter}) {
-  const productSettings = getProductSettings(product);
-  const jobs = Object.keys(productSettings.jobs);
-  return Promise.all(jobs.map(async job => {
-    const jobSettings = productSettings.jobs[job];
-    return fetchVersionList(job, jobSettings.version_param)
-  }))
-  .then(values => {
-    return Array.from(new Set(values.flat()));
-  })
-  .then(versionList => {
-    const newList = transformVersionList({product, versionList, versionFilter})
-    return newList;
-  })
-};
-
 async function fetchXML (url) {
   return fetch(url, {cache: "default"})
     .then(resp => {
@@ -68,6 +28,33 @@ async function fetchXML (url) {
     }).then(json => {
       return JSON.parse(json);
     });
+}
+
+function useVersionLists({product, versionFilter}) {
+  const productSettings = getProductSettings(product);
+  const jobs = Object.keys(productSettings.jobs);
+  const versionQueries = useQueries(
+    jobs.map(job => {
+      const jobSettings = productSettings.jobs[job];
+      return {
+        queryKey: ['versions', product, job, versionFilter],
+        queryFn: () => fetchVersionList(job, jobSettings.version_param),
+      }
+    })
+  );
+  const result = {
+    error: versionQueries.some(item => item.error),
+    isLoading: versionQueries.every(item => item.isLoading),
+    data: transformVersionList({
+      product,
+      versionList: Array.from(new Set(
+        versionQueries.filter(item => item.isSuccess)
+          .map(item => item.data).flat()
+      )),
+      versionFilter,
+    }),
+  };
+  return result;
 }
 
 async function fetchVersionList (job, version_param) {
@@ -101,6 +88,15 @@ function transformVersionList ({product, versionList, versionFilter}) {
   return Object.values(versionObj).flat().sort().reverse();
 }
 
+function useProductBuilds({product, version}) {
+  const { data, error, isLoading } = useQuery(
+    ['builds', product, version],
+    () => fetchProductBuilds({product, version}),
+  )
+
+  return {data, error, isLoading};
+}
+
 function fetchProductBuilds ({product, version}) {
   const productSettings = getProductSettings(product);
   const jobs = Object.keys(productSettings.jobs);
@@ -112,7 +108,11 @@ function fetchProductBuilds ({product, version}) {
     const lists = resps.map(item => item.value).filter(item => item !== undefined);
     return Array.from(new Set(lists.flat()));
   }).then(builds  => {
-    return builds.map(getTestBuildMetadata);
+    return builds.map(build => {
+      const newBuild = getTestBuildMetadata(build);
+      newBuild.version = version;
+      return newBuild;
+    });
   })
 };
 
@@ -156,9 +156,50 @@ function getTestBuildMetadata (build) {
   return metadata;
 }
 
+function usePipelineRunData({job, build, status, version}) {
+  const pipelineUrl = getUrl(`/job/${job}/${build}/wfapi/`);
+  const queryFn = async ({ queryKey }) => {
+    return fetch(queryKey[1].url).then(resp => resp.json());
+  };
+  const fetchPipeline = status === undefined ? false : true;
+  const { data: pipelineData, error: pipelineError, isLoading: isPipelineLoading } = useQuery({
+    queryKey: ['pipeline', {version, url: pipelineUrl}],
+    queryFn,
+    enabled: fetchPipeline,
+    refetchOnWindowFocus: status === 'in_progress',
+  })
+  let stage;
+  let stageUrl;
+  let fetchStage = false;
+  const result = {data: {}};
+  if ( fetchPipeline && ! isPipelineLoading ) {
+    stage = pipelineData.stages.filter(
+      _stage => _stage.status.toLowerCase() === status)[0];
+    if ( stage !== undefined ) {
+      stageUrl = getUrl(stage._links.self.href);
+      fetchStage = true;
+      result.data.name = stage.name;
+    }
+  }
+  const { data: stageData, error: stageError, isLoading: isStageLoading } = useQuery({
+    queryKey: ['stage', {version, url: stageUrl}],
+    queryFn,
+    enabled: fetchStage,
+    refetchOnWindowFocus: status === 'in_progress',
+  })
+  if ( fetchStage && ! isStageLoading ) {
+    const node = stageData.stageFlowNodes.filter(
+      node => node.status.toLowerCase() === status)[0];
+    result.data.consoleUrl = conf.jenkins.url + '/' +
+      node._links.console.href;
+  }
+  result.error = pipelineError || stageError;
+  result.isLoading = isPipelineLoading || isStageLoading;
+  return result;
+}
+
 export {
-  fetchPipelineRunData,
-  fetchProductBuilds,
-  fetchVersionLists,
-  getProductSettings,
+  useVersionLists,
+  useProductBuilds,
+  usePipelineRunData,
 }

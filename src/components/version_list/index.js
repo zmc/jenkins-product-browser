@@ -1,16 +1,15 @@
-import { useAsync } from "react-async"
 import { useParams } from 'react-router-dom';
 
 import Typography from '@material-ui/core/Typography';
 
-import { fetchVersionLists } from '../../lib/jenkins';
+import { useVersionLists } from '../../lib/jenkins';
 import Version from '../version';
 
 
 function VersionList (props) {
   const { version } = useParams();
-  const { data, error, isPending } = useAsync(
-    { promiseFn: fetchVersionLists, product: props.product, versionFilter: version })
+  const { data, error, isLoading } = useVersionLists(
+    { product: props.product, versionFilter: version })
   if ( error ) {
     return (
       <div>
@@ -21,7 +20,7 @@ function VersionList (props) {
       </div>
     )
   };
-  if ( isPending ) { return null };
+  if ( isLoading ) { return null };
   return (
     <>
       { data.map(item => (

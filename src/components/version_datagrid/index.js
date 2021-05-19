@@ -1,13 +1,11 @@
-import { useAsync } from "react-async"
 import format from 'date-fns/format';
 import formatDistanceToNowStrict from 'date-fns/formatDistanceToNowStrict';
 import intervalToDuration from 'date-fns/intervalToDuration';
 import formatDuration from 'date-fns/formatDuration';
 
-import Skeleton from '@material-ui/lab/Skeleton';
 import { DataGrid } from '@material-ui/data-grid';
 
-import { fetchProductBuilds } from '../../lib/jenkins';
+import { useProductBuilds } from '../../lib/jenkins';
 import GridLink from '../grid_link';
 import Stage from '../stage';
 import TestResults from '../test_results';
@@ -59,6 +57,7 @@ const columns = [
   { field: 'stage', headerName: 'Stage', width: 200,
     renderCell: (params) => (
       <Stage
+        version={params.row.version}
         job={params.row.job}
         build={params.row.build}
         status={params.row.status}
@@ -76,8 +75,8 @@ const columns = [
 ];
 
 export default function VersionDataGrid (props) {
-  const { data, error, isPending } = useAsync(
-    { promiseFn: fetchProductBuilds, product: props.product, version: props.value, watch: props.fetched })
+  const { data, error, isLoading } = useProductBuilds(
+    { product: props.product, version: props.value })
   const pageSize = 5;
   let inner;
   // Ideally minHeight would be 80, but anything under 140 seems to invoke:
@@ -89,18 +88,19 @@ export default function VersionDataGrid (props) {
   if ( error ) {
     console.error(error);
     inner = null;
-  } else if ( isPending ) {
-    inner = (<Skeleton variant="rect" height={minHeight} animation="wave" />);
   } else {
-    pagination = (data.length > pageSize);
+    const dataLength = data?.length || 0;
+    pagination = (dataLength > pageSize);
     height = Math.max(
       minHeight,
-      50 + 36 * Math.min(data.length, pageSize)
+      50 + 36 * Math.min(dataLength, pageSize)
     );
     if ( pagination ) height += 52;
     inner = (
       <DataGrid
-        rows={data}
+        version={props.value}
+        loading={isLoading}
+        rows={data || []}
         columns={columns}
         density="compact"
         pageSize={pageSize}

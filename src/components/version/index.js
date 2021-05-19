@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQueryClient } from 'react-query';
 
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
@@ -12,9 +13,13 @@ import styles from './style.module.css';
 
 function Version (props) {
   const [ contentsOpen, setContentsOpen ] = useState(false);
-  const [ fetched, setFetched ] = useState();
+  const queryClient = useQueryClient();
   const short_version = props.value.split(':')[1];
-  const refresh = () => { setFetched(new Date().getTime()) };
+  const refresh = () => {
+    queryClient.invalidateQueries(['builds', props.product, props.value]);
+    queryClient.invalidateQueries(['pipeline', {version: props.value}]);
+    queryClient.invalidateQueries(['stage', {version: props.value}]);
+  };
   return (
     <div className={styles.version}>
       <div style={{display: "flex", justifyContent: "space-between"}}>
@@ -44,7 +49,6 @@ function Version (props) {
       <VersionDataGrid
         product={props.product}
         value={props.value}
-        fetched={fetched}
       />
     </div>
   )

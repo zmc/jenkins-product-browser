@@ -64,6 +64,9 @@ registerRoute(
   ({url}) => url.pathname.startsWith('/job/'),
   new StaleWhileRevalidate({
     cacheName: 'jobData',
+    plugins: [
+      new ExpirationPlugin({ maxAgeSeconds: 60 * 5 }),
+    ],
   }),
 );
 

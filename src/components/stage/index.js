@@ -1,8 +1,6 @@
-import { Async } from 'react-async';
-
 import Link from '@material-ui/core/Link';
 
-import { fetchPipelineRunData } from '../../lib/jenkins';
+import { usePipelineRunData } from '../../lib/jenkins';
 
 
 function Stage (props) {
@@ -11,29 +9,26 @@ function Stage (props) {
     "running": "in_progress",
     "aborted": "aborted",
   };
-  if ( ! props.status || statuses[props.status] === undefined ) {
-    return ""
+  const { data, error, isLoading } = usePipelineRunData({
+    job: props.job,
+    build: props.build,
+    status: statuses[props.status],
+    version: props.version,
+  });
+  if ( error ) {
+    console.error(error);
+    return null;
+  };
+  if ( isLoading ) {
+    return "...";
   }
+  if ( data === undefined || ! data.consoleUrl || ! data.name ) return null;
   return (
-    <Async
-      promiseFn={fetchPipelineRunData}
-      job={props.job}
-      build={props.build}
-      status={statuses[props.status]}
-    >
-      <Async.Fulfilled>
-        {(data) => data?
-          <Link
-            href={data.consoleUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >{data.name}</Link> : null
-        }
-      </Async.Fulfilled>
-      <Async.Rejected>
-        {(error) => { console.error(error) }}
-      </Async.Rejected>
-    </Async>
+    <Link
+      href={data.consoleUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+    >{data.name}</Link>
   )
 }
 

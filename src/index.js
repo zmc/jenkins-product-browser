@@ -1,6 +1,8 @@
 import React from 'react';
 import { useState } from 'react';
 import ReactDOM from 'react-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { ReactQueryDevtools } from 'react-query/devtools';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
@@ -11,6 +13,15 @@ import './index.css';
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 5,
+    },
+  }
+});
 
 function useDarkMode () {
   const systemDarkMode = useMediaQuery(
@@ -48,7 +59,10 @@ function Root () {
     <ThemeProvider theme={theme}>
       <Router>
         <CssBaseline />
-        <App darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+        <QueryClientProvider client={queryClient}>
+          <ReactQueryDevtools />
+          <App darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+        </QueryClientProvider>
       </Router>
     </ThemeProvider>
   )
