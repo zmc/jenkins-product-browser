@@ -1,6 +1,6 @@
 const conf = {
   jenkins: {
-    url: "https://storage-jenkins-csb-ceph.cloud.paas.psi.redhat.com",
+    url: "https://ceph-downstream-jenkins-csb-storage.apps.ocp4.prod.psi.redhat.com/",
     api_url: process.env.REACT_APP_API_URL ||
       "https://reverse-proxy-jenkins-product-browser.apps.ocp4.prod.psi.redhat.com",
     max_builds: 0,  // 0 or undefined -> unlimited
