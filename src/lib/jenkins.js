@@ -117,7 +117,10 @@ function fetchProductBuilds ({product, version}) {
 };
 
 async function fetchBuilds ({job, version_param, version}) {
-  const url = getUrl(`/job/${job}/api/xml?tree=name,builds[number,actions[parameters[name,value],failCount,skipCount,totalCount,urlName],building,duration,result,timestamp]&wrapper=root&xpath=//*/build[action/parameter[name[text()='${version_param}']%20and%20value[text()='${version}']]]`);
+  let url = getUrl(`/job/${job}/api/xml?tree=name,builds[number,actions[parameters[name,value],failCount,skipCount,totalCount,urlName],building,duration,result,timestamp]&wrapper=root&xpath=//*/build`);
+  if ( version && version_param ) {
+    url += `[action/parameter[name[text()='${version_param}']%20and%20value[text()='${version}']]]`;
+  }
   return fetchXML(url)
     .then(data => {
       const builds = [data.root.build].flat(1);
