@@ -98,13 +98,18 @@ export default function VersionDataGrid (props) {
     if ( pagination ) height += 52;
     inner = (
       <DataGrid
-        version={props.value}
         loading={isLoading}
         rows={data || []}
         columns={columns}
         density="compact"
         pageSize={pageSize}
         hideFooter={! pagination}
+        sortModel={[
+          {
+            field: 'timestamp',
+            sort: 'desc',
+          },
+        ]}
       />
     )
   }
