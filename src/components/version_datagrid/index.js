@@ -77,7 +77,7 @@ const columns = [
 export default function VersionDataGrid (props) {
   const { data, error, isLoading } = useProductBuilds(
     { product: props.product, version: props.value })
-  const pageSize = 5;
+  const pageSize = props.pageSize || 5;
   let inner;
   // Ideally minHeight would be 80, but anything under 140 seems to invoke:
   // Warning: `Infinity` is an invalid value for the `minHeight` css style
