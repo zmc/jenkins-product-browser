@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQueryClient } from 'react-query';
+import { useParams } from 'react-router-dom';
 
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
@@ -12,11 +13,12 @@ import styles from './style.module.css';
 
 
 function Version (props) {
+  const { product } = useParams();
   const [ contentsOpen, setContentsOpen ] = useState(false);
   const queryClient = useQueryClient();
   const short_version = props.value.split(':')[1];
   const refresh = () => {
-    queryClient.invalidateQueries(['builds', props.product, props.value]);
+    queryClient.invalidateQueries(['builds', product, props.value]);
     queryClient.invalidateQueries(['pipeline', {version: props.value}]);
     queryClient.invalidateQueries(['stage', {version: props.value}]);
   };
@@ -47,7 +49,6 @@ function Version (props) {
         version={short_version}
       />
       <VersionDataGrid
-        product={props.product}
         value={props.value}
       />
     </div>

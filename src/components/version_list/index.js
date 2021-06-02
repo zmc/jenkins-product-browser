@@ -6,10 +6,10 @@ import { useVersionLists } from '../../lib/jenkins';
 import Version from '../version';
 
 
-function VersionList (props) {
-  const { version } = useParams();
+function VersionList () {
+  const { product, version } = useParams();
   const { data, error, isLoading } = useVersionLists(
-    { product: props.product, versionFilter: version })
+    { product, versionFilter: version })
   if ( error ) {
     return (
       <div>
@@ -24,7 +24,7 @@ function VersionList (props) {
   return (
     <>
       { data.map(item => (
-        <Version key={item} value={item} product={props.product}/>
+        <Version key={item} value={item} />
       ))}
     </>
   )

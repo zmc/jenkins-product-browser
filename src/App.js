@@ -1,4 +1,4 @@
-import { Switch, Route } from 'react-router-dom';
+import { Switch, Route, Redirect } from 'react-router-dom';
 import AppBar from '@material-ui/core/AppBar';
 import IconButton from '@material-ui/core/IconButton';
 import Brightness4Icon from '@material-ui/icons/Brightness4';
@@ -37,7 +37,7 @@ function App(props) {
       <div className="main">
         <Switch>
           <Route path="/" exact>
-            <Product name="OCS" />
+            <Redirect to="/products/OCS" />
           </Route>
           <Route path="/products" exact>
             <ProductList />

@@ -3,13 +3,12 @@ import Typography from '@material-ui/core/Typography';
 
 import VersionList from '../../components/version_list';
 
-export default function Product (props) {
+export default function Product () {
   const { product, version } = useParams();
-  const name = product || props.name;
   return (
     <>
-      <Typography variant="h3">Latest {name} builds</Typography>
-      <VersionList product={name} version={version}/>
+      <Typography variant="h3">Latest {product} builds</Typography>
+      <VersionList version={version}/>
     </>
   )
 };

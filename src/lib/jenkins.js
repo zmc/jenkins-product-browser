@@ -77,7 +77,7 @@ function transformVersionList ({product, versionList, versionFilter}) {
     accumulator[semVer].push(currentValue);
     return accumulator;
   }, {});
-  const settings = conf.products[product];
+  const settings = getProductSettings(product);
   const maxDevBuilds = versionFilter === undefined? (settings.max_dev_builds || 0): -1;
   Object.entries(versionObj).forEach(([semVer, subList]) => {
     subList.sort().reverse();

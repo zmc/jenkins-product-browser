@@ -1,3 +1,5 @@
+import { useParams } from 'react-router-dom';
+
 import format from 'date-fns/format';
 import formatDistanceToNowStrict from 'date-fns/formatDistanceToNowStrict';
 import intervalToDuration from 'date-fns/intervalToDuration';
@@ -75,8 +77,9 @@ const columns = [
 ];
 
 export default function VersionDataGrid (props) {
+  const { product } = useParams();
   const { data, error, isLoading } = useProductBuilds(
-    { product: props.product, version: props.value })
+    { product, version: props.value })
   const pageSize = props.pageSize || 5;
   let inner;
   // Ideally minHeight would be 80, but anything under 140 seems to invoke:
