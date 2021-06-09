@@ -44,7 +44,7 @@ function useVersionLists({product, versionFilter}) {
   );
   const result = {
     error: versionQueries.some(item => item.error),
-    isLoading: versionQueries.every(item => item.isLoading),
+    isLoading: versionQueries.some(item => item.isLoading),
     data: transformVersionList({
       product,
       versionList: Array.from(new Set(
