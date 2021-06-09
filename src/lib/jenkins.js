@@ -194,7 +194,7 @@ function usePipelineRunData({job, build, status, version}) {
     const node = stageData.stageFlowNodes.filter(
       node => node.status.toLowerCase() === status)[0];
     result.data.consoleUrl = conf.jenkins.url + '/' +
-      node._links.console.href;
+      node?._links.console.href;
   }
   result.error = pipelineError || stageError;
   result.isLoading = isPipelineLoading || isStageLoading;
