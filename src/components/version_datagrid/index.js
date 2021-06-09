@@ -5,6 +5,7 @@ import formatDistanceToNowStrict from 'date-fns/formatDistanceToNowStrict';
 import intervalToDuration from 'date-fns/intervalToDuration';
 import formatDuration from 'date-fns/formatDuration';
 
+import Skeleton from '@material-ui/lab/Skeleton';
 import { DataGrid } from '@material-ui/data-grid';
 
 import { useProductBuilds } from '../../lib/jenkins';
@@ -93,6 +94,8 @@ export default function VersionDataGrid (props) {
   if ( error ) {
     console.error(error);
     inner = null;
+  } else if ( isLoading ) {
+    inner = (<Skeleton variant="rect" height={minHeight} animation="wave" />);
   } else {
     const dataLength = data?.length || 0;
     pagination = (dataLength > pageSize);
