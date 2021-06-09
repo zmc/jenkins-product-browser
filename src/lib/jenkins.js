@@ -201,8 +201,17 @@ function usePipelineRunData({job, build, status, version}) {
   return result;
 }
 
+function getBuildParams (build) {
+  const paramsAction = build.action.filter(item => item._attributes?._class === "hudson.model.ParametersAction")[0];
+  const result = Object.fromEntries(
+    paramsAction.parameter.map(item => [item.name._text, item.value._text])
+  );
+  return result;
+}
+
 export {
   useVersionLists,
   useProductBuilds,
   usePipelineRunData,
+  getBuildParams,
 }
