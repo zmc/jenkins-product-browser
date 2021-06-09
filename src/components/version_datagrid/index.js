@@ -16,8 +16,10 @@ import styles from './style.module.css';
 
 const columns = [
   { field: 'timestamp',
+    type: 'dateTime',
     headerName: 'Started',
     valueFormatter: ({value}) => format(new Date(value), 'yyyy-MM-dd HH:mm'),
+    valueGetter: (params) => new Date(params.row.timestamp),
     width: 150,
   },
   { field: 'duration',
@@ -39,7 +41,7 @@ const columns = [
     valueFormatter: ({value}) => value? value: '?',
     cellClassName: params => styles[params.value? params.value.toLowerCase() : 'unknown'],
   },
-  { field: 'job_', headerName: 'Job', width: 150,
+  { field: 'job', headerName: 'Job', width: 150,
     renderCell: (params) => (
       <GridLink
        params={params}
@@ -47,7 +49,7 @@ const columns = [
       >{params.row.job}</GridLink>
     ),
   },
-  { field: 'build_', headerName: 'Build',
+  { field: 'build', headerName: 'Build',
     renderCell: (params) => (
       <GridLink
        params={params}
