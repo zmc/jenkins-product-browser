@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom';
+import { useIsFetching } from 'react-query';
 
 import format from 'date-fns/format';
 import formatDistanceToNowStrict from 'date-fns/formatDistanceToNowStrict';
@@ -83,6 +84,7 @@ export default function VersionDataGrid (props) {
   const { product } = useParams();
   const { data, error, isLoading } = useProductBuilds(
     { product, version: props.value })
+  const isFetching = useIsFetching(['builds', product, props.value]);
   const pageSize = props.pageSize || 5;
   let inner;
   // Ideally minHeight would be 80, but anything under 140 seems to invoke:
@@ -106,7 +108,7 @@ export default function VersionDataGrid (props) {
     if ( pagination ) height += 52;
     inner = (
       <DataGrid
-        loading={isLoading}
+        loading={Boolean(isLoading || isFetching)}
         rows={data || []}
         columns={columns}
         density="compact"
