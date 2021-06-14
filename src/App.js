@@ -1,4 +1,4 @@
-import { Switch, Route, Redirect } from 'react-router-dom';
+import { Switch, Route } from 'react-router-dom';
 import AppBar from '@material-ui/core/AppBar';
 import IconButton from '@material-ui/core/IconButton';
 import Brightness4Icon from '@material-ui/icons/Brightness4';
@@ -8,6 +8,7 @@ import GitHubIcon from '@material-ui/icons/GitHub';
 
 
 import './App.css';
+import Home from './pages/home';
 import ProductList from './pages/product_list';
 import Product from './pages/product';
 import BuildList from './pages/builds';
@@ -38,7 +39,7 @@ function App(props) {
       <div className="main">
         <Switch>
           <Route path="/" exact>
-            <Redirect to="/products/OCS" />
+            <Home />
           </Route>
           <Route path="/products" exact>
             <ProductList />
