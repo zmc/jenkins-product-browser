@@ -10,6 +10,7 @@ import GitHubIcon from '@material-ui/icons/GitHub';
 import './App.css';
 import ProductList from './pages/product_list';
 import Product from './pages/product';
+import BuildList from './pages/builds';
 
 function App(props) {
   return (
@@ -41,6 +42,9 @@ function App(props) {
           </Route>
           <Route path="/products" exact>
             <ProductList />
+          </Route>
+          <Route path="/products/:product/builds">
+            <BuildList />
           </Route>
           <Route path="/products/:product/:version">
             <Product />
