@@ -1,6 +1,7 @@
 import { Switch, Route } from 'react-router-dom';
 import AppBar from '@material-ui/core/AppBar';
 import IconButton from '@material-ui/core/IconButton';
+import Typography from '@material-ui/core/Typography';
 import Brightness4Icon from '@material-ui/icons/Brightness4';
 import Brightness7Icon from '@material-ui/icons/Brightness7';
 import Link from '@material-ui/core/Link';
@@ -17,24 +18,38 @@ function App(props) {
   return (
     <div className="App">
       <AppBar position="static">
-        <div
-          style={{marginLeft: "auto", marginRight: 12}}
-        >
-        <IconButton
-          onClick={props.toggleDarkMode}
-        >
-          { props.darkMode? <Brightness7Icon /> : <Brightness4Icon /> }
-        </IconButton>
-        <Link
-          href="https://github.com/zmc/jenkins-product-browser"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <IconButton>
-            <GitHubIcon />
-          </IconButton>
-        </Link>
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingLeft: "12px"
+      }}>
+        <div>
+          <Typography
+            variant="h5"
+          >
+            jenkins product browser
+          </Typography>
         </div>
+        <div
+          style={{textAlign: "end"}}
+        >
+          <IconButton
+            onClick={props.toggleDarkMode}
+          >
+            { props.darkMode? <Brightness7Icon /> : <Brightness4Icon /> }
+          </IconButton>
+          <Link
+            href="https://github.com/zmc/jenkins-product-browser"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <IconButton>
+              <GitHubIcon />
+            </IconButton>
+          </Link>
+        </div>
+      </div>
       </AppBar>
       <div className="main">
         <Switch>
