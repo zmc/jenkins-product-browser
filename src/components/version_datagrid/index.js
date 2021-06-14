@@ -35,7 +35,7 @@ const columns = [
             {start: 0, end: params.value},
           ),
           {format: ['hours', 'minutes']}
-        )
+        ) || `${Math.round(params.value / 1000)} seconds`
     }},
     width: 175,
   },
@@ -43,7 +43,7 @@ const columns = [
     valueFormatter: ({value}) => value? value: '?',
     cellClassName: params => styles[params.value? params.value.toLowerCase() : 'unknown'],
   },
-  { field: 'job', headerName: 'Job', width: 150,
+  { field: 'job', headerName: 'Job', width: 125,
     renderCell: (params) => (
       <GridLink
        params={params}
@@ -51,7 +51,7 @@ const columns = [
       >{params.row.job}</GridLink>
     ),
   },
-  { field: 'build', headerName: 'Build',
+  { field: 'build', headerName: 'Build', width: 100,
     renderCell: (params) => (
       <GridLink
        params={params}
@@ -60,7 +60,7 @@ const columns = [
     ),
     //valueGetter: (params) => params.getValue('buildURL'),
   },
-  { field: 'stage', headerName: 'Stage', width: 200,
+  { field: 'stage', headerName: 'Stage', width: 150,
     renderCell: (params) => (
       <Stage
         version={params.row.version}
@@ -70,7 +70,7 @@ const columns = [
       />
     )
   },
-  { field: 'testResults', headerName: 'Tests', width: 200,
+  { field: 'testResults', headerName: 'Tests', width: 175,
     renderCell: (params) => (
       <TestResults
        results={params.getValue("testResults")}
@@ -106,11 +106,19 @@ export default function VersionDataGrid (props) {
       50 + 36 * Math.min(dataLength, pageSize)
     );
     if ( pagination ) height += 52;
+    const columns_ = [...columns]
+    if ( props.versionColumn === true ) {
+      columns_.unshift({
+        field: 'version', headerName: 'Version', width: 125,
+        valueFormatter: (params) => params.value.split(':')[1],
+        valueParser: (value) => value.split(':')[1],
+      });
+    }
     inner = (
       <DataGrid
         loading={Boolean(isLoading || isFetching)}
         rows={data || []}
-        columns={columns}
+        columns={columns_}
         density="compact"
         pageSize={pageSize}
         hideFooter={! pagination}

@@ -50,6 +50,7 @@ function Version (props) {
       />
       <VersionDataGrid
         value={props.value}
+        versionColumn={false}
       />
     </div>
   )
