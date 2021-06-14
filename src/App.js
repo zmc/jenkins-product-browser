@@ -1,7 +1,8 @@
-import { Switch, Route } from 'react-router-dom';
+import { Switch, Route, Link as RouterLink } from 'react-router-dom';
 import AppBar from '@material-ui/core/AppBar';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
+import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Brightness4Icon from '@material-ui/icons/Brightness4';
 import Brightness7Icon from '@material-ui/icons/Brightness7';
 import Link from '@material-ui/core/Link';
@@ -14,10 +15,10 @@ import ProductList from './pages/product_list';
 import Product from './pages/product';
 import BuildList from './pages/builds';
 
-function App(props) {
+
+function Bar (props) {
   return (
-    <div className="App">
-      <AppBar position="static">
+    <AppBar position="static">
       <div style={{
         display: "flex",
         justifyContent: "space-between",
@@ -25,11 +26,11 @@ function App(props) {
         paddingLeft: "12px"
       }}>
         <div>
-          <Typography
-            variant="h5"
-          >
-            jenkins product browser
-          </Typography>
+          <Route>
+          {({ location }) => {
+            return <Crumbs location={location} />
+          }}
+          </Route>
         </div>
         <div
           style={{textAlign: "end"}}
@@ -50,7 +51,44 @@ function App(props) {
           </Link>
         </div>
       </div>
-      </AppBar>
+    </AppBar>
+  )
+}
+
+function Crumbs (props) {
+  console.log(props);
+  const pathnames = props.location.pathname.split('/').filter(x => x);
+  console.log(pathnames);
+  return (
+    <Breadcrumbs arial-label="breadcrumb">
+      <Link color="inherit" to="/" component={RouterLink}>
+        <Typography color="textPrimary">
+          jenkins product browser
+        </Typography>
+      </Link>
+      {pathnames.map((value, index) => {
+        const last = index === pathnames.length - 1;
+        const to = `/${pathnames.slice(0, index + 1).join('/')}`;
+        return last ? (
+          <Typography color="textPrimary" key={to}>
+            {value}
+          </Typography>
+        ) : (
+          <Link color="inherit" to={to} key={to} component={RouterLink}>
+            {value}
+          </Link>
+        );
+      })}
+    </Breadcrumbs>
+
+  )
+}
+
+
+function App(props) {
+  return (
+    <div className="App">
+      <Bar {...props} />
       <div className="main">
         <Switch>
           <Route path="/" exact>
