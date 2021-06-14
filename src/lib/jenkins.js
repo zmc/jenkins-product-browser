@@ -110,7 +110,9 @@ function fetchProductBuilds ({product, version}) {
   }).then(builds  => {
     return builds.map(build => {
       const newBuild = getTestBuildMetadata(build);
-      newBuild.version = version;
+      newBuild.product = product;
+      const version_param = productSettings.jobs[build.job].version_param;
+      newBuild.version = newBuild.parameters[version_param];
       return newBuild;
     });
   })
@@ -141,6 +143,7 @@ function getTestBuildMetadata (build) {
     status: build.building._text? 'running' : build.result._text.toLowerCase(),
     timestamp: build.timestamp._text,
     duration: build.duration._text,
+    parameters: getBuildParams(build),
   };
   let testResults = build.action.filter((item) => {
     if ( item._attributes === undefined ) return false;
