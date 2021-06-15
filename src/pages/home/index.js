@@ -3,23 +3,40 @@ import Card from '@material-ui/core/Card';
 import Link from '@material-ui/core/Link';
 import Typography from '@material-ui/core/Typography';
 
-import conf from '../../settings.js';
+import conf from '../../settings';
+import { getProductSettings } from '../../lib/jenkins';
 
 
 function ProductCard (props) {
+  const jobs = Object.keys(getProductSettings(props.name).jobs);
   return (
-    <Card>
-      <Typography variant="h4">
+    <Card style={{minWidth: 275, padding: "10px"}} key={props.name} >
+      <Typography variant="h4" style={{textAlign: "center"}}>
         {props.name}
+      </Typography>
+      <Typography>
+        Validation jobs: {jobs.map(item => {
+          return (
+            <span style={{padding: "0 5px"}}>
+              <Link
+                href={`${conf.jenkins.url}/job/${item}`}
+                target="_blank"
+                key={item}
+              >
+                {item}
+              </Link>
+            </span>
+          )
+        })}
       </Typography>
       <Link component={RouterLink} to={`/products/${props.name}/`}>
         <Typography>
-          Latest builds grouped by version
+          Development Version Status
         </Typography>
       </Link>
       <Link component={RouterLink} to={`/products/${props.name}/builds`}>
         <Typography>
-          All latest builds
+          Latest Build Status
         </Typography>
       </Link>
     </Card>
@@ -30,7 +47,15 @@ export default function Home () {
   const products = Object.keys(conf.products);
   return (
     <>
-      { products.map(product => <ProductCard key={product} name={product} />) }
+      <Typography
+        variant="h3"
+        style={{textAlign: "center", margin: "20px"}}
+      >
+        Products
+      </Typography>
+      <div style={{display: "flex", justifyContent: "center"}}>
+        { products.map(product => <ProductCard key={product} name={product} />) }
+      </div>
     </>
   )
 }

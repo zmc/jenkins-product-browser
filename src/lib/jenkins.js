@@ -217,4 +217,5 @@ export {
   useProductBuilds,
   usePipelineRunData,
   getBuildParams,
+  getProductSettings,
 }

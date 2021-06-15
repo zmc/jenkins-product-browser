@@ -7,7 +7,7 @@ export default function Product () {
   const { product, version } = useParams();
   return (
     <>
-      <Typography variant="h3">Latest {product} builds</Typography>
+      <Typography variant="h4">{product}: Development Version Status</Typography>
       <VersionList version={version}/>
     </>
   )

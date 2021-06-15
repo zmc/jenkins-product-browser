@@ -11,7 +11,6 @@ import GitHubIcon from '@material-ui/icons/GitHub';
 
 import './App.css';
 import Home from './pages/home';
-import ProductList from './pages/product_list';
 import Product from './pages/product';
 import BuildList from './pages/builds';
 
@@ -56,9 +55,7 @@ function Bar (props) {
 }
 
 function Crumbs (props) {
-  console.log(props);
   const pathnames = props.location.pathname.split('/').filter(x => x);
-  console.log(pathnames);
   return (
     <Breadcrumbs arial-label="breadcrumb">
       <Link color="inherit" to="/" component={RouterLink}>
@@ -95,7 +92,7 @@ function App(props) {
             <Home />
           </Route>
           <Route path="/products" exact>
-            <ProductList />
+            <Home />
           </Route>
           <Route path="/products/:product/builds">
             <BuildList />
