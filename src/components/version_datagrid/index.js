@@ -108,10 +108,11 @@ export default function VersionDataGrid (props) {
     if ( pagination ) height += 52;
     const columns_ = [...columns]
     if ( props.versionColumn === true ) {
+      const splitVersion = (ver) => ver? ver.split(':')[1] : null;
       columns_.unshift({
         field: 'version', headerName: 'Version', width: 125,
-        valueFormatter: (params) => params.value.split(':')[1],
-        valueParser: (value) => value.split(':')[1],
+        valueFormatter: (params) => splitVersion(params.value),
+        valueParser: (value) => splitVersion(value),
       });
     }
     inner = (

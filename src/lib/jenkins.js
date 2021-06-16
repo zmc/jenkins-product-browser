@@ -206,8 +206,11 @@ function usePipelineRunData({job, build, status, version}) {
 
 function getBuildParams (build) {
   const paramsAction = build.action.filter(item => item._attributes?._class === "hudson.model.ParametersAction")[0];
+  // If a build fails quickly enough (e.g. if the repo containing the
+  // Jenkinsfile can't be cloned) we may not have a ParametersAction
+  if ( paramsAction === undefined ) return {};
   const result = Object.fromEntries(
-    paramsAction.parameter.map(item => [item.name._text, item.value._text])
+    paramsAction?.parameter.map(item => [item.name._text, item.value._text])
   );
   return result;
 }
