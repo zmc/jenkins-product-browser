@@ -1,3 +1,4 @@
+import axios from 'axios';
 import coerce from 'semver/functions/coerce';
 import { useQuery, useQueries } from 'react-query';
 import convert from 'xml-js';
@@ -20,9 +21,9 @@ function getProductSettings (product) {
 };
 
 async function fetchXML (url) {
-  return fetch(url, {cache: "default"})
+  return axios.get(url)
     .then(resp => {
-      if ( resp.ok ) return resp.text();
+      return resp.data;
     }).then(xml => {
         return convert.xml2json(xml, {compact: true, nativeType: true});
     }).then(json => {
@@ -100,12 +101,12 @@ function useProductBuilds({product, version}) {
 function fetchProductBuilds ({product, version}) {
   const productSettings = getProductSettings(product);
   const jobs = Object.keys(productSettings.jobs);
-  return Promise.allSettled(jobs.map(async job => {
+  return Promise.all(jobs.map(async job => {
     const version_param = productSettings.jobs[job].version_param
     return fetchBuilds({job, version_param, version})
   }))
-  .then(resps => {
-    const lists = resps.map(item => item.value).filter(item => item !== undefined);
+  .then(values => {
+    const lists = values.filter(item => item !== undefined);
     return Array.from(new Set(lists.flat()));
   }).then(builds  => {
     return builds.map(build => {
@@ -125,6 +126,7 @@ async function fetchBuilds ({job, version_param, version}) {
   }
   return fetchXML(url)
     .then(data => {
+      if ( data.root.build === undefined ) return [];
       const builds = [data.root.build].flat(1);
       builds.forEach(build => build.job = job);
       return builds;
