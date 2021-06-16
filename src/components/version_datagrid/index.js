@@ -58,7 +58,6 @@ const columns = [
        url={params.row.buildURL}
       >{params.row.build}</GridLink>
     ),
-    //valueGetter: (params) => params.getValue('buildURL'),
   },
   { field: 'stage', headerName: 'Stage', width: 150,
     renderCell: (params) => (
@@ -73,7 +72,7 @@ const columns = [
   { field: 'testResults', headerName: 'Tests', width: 175,
     renderCell: (params) => (
       <TestResults
-       results={params.getValue("testResults")}
+       results={params.row.testResults}
        url={params.row.testResultsURL}
       />
     ),
