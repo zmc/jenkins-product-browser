@@ -10,6 +10,7 @@ import Skeleton from '@material-ui/lab/Skeleton';
 import { DataGrid } from '@material-ui/data-grid';
 
 import { useProductBuilds } from '../../lib/jenkins';
+import FetchError from '../fetch_error';
 import GridLink from '../grid_link';
 import Stage from '../stage';
 import TestResults from '../test_results';
@@ -93,8 +94,7 @@ export default function VersionDataGrid (props) {
   let height = 'auto';
   let pagination = false;
   if ( error ) {
-    console.error(error);
-    inner = null;
+    inner = (<FetchError />);
   } else if ( isLoading ) {
     inner = (<Skeleton variant="rect" height={minHeight} animation="wave" />);
   } else {
