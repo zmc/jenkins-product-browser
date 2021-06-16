@@ -17,7 +17,7 @@ function ProductCard (props) {
       <Typography>
         Validation jobs: {jobs.map(item => {
           return (
-            <span style={{padding: "0 5px"}}>
+            <span style={{padding: "0 5px"}} key={item}>
               <Link
                 href={`${conf.jenkins.url}/job/${item}`}
                 target="_blank"
