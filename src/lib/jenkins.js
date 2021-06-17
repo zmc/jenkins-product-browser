@@ -167,7 +167,7 @@ function getTestBuildMetadata (build) {
 function usePipelineRunData({job, build, status, version}) {
   const pipelineUrl = getUrl(`/job/${job}/${build}/wfapi/`);
   const queryFn = async ({ queryKey }) => {
-    return fetch(queryKey[1].url).then(resp => resp.json());
+    return axios.get(queryKey[1].url).then(resp => resp.data);
   };
   const fetchPipeline = status === undefined ? false : true;
   const { data: pipelineData, error: pipelineError, isLoading: isPipelineLoading } = useQuery({
