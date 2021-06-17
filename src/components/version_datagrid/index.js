@@ -40,7 +40,7 @@ const columns = [
     }},
     width: 175,
   },
-  { field: 'status', headerName: 'Status', width: 100,
+  { field: 'status', headerName: 'Status', width: 125,
     valueFormatter: ({value}) => value? value: '?',
     cellClassName: params => styles[params.value? params.value.toLowerCase() : 'unknown'],
   },
@@ -52,7 +52,7 @@ const columns = [
       >{params.row.job}</GridLink>
     ),
   },
-  { field: 'build', headerName: 'Build', width: 100,
+  { field: 'build', headerName: 'Build', width: 125,
     renderCell: (params) => (
       <GridLink
        params={params}
