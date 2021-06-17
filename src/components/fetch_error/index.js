@@ -1,10 +1,13 @@
-import { useQueryClient } from 'react-query';
+import { useQueryClient, useIsFetching } from 'react-query';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
+import RefreshIcon from '@material-ui/icons/Refresh';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 
 export default function FetchError () {
   const queryClient = useQueryClient();
+  const isFetching = useIsFetching();
   const retryQueries = () => {
     queryClient.invalidateQueries({stale: true});
   }
@@ -19,8 +22,10 @@ export default function FetchError () {
         variant="contained"
         color="primary"
         style={{width: "fit-content"}}
+        disabled={isFetching > 0}
       >
-        Retry
+        { isFetching? <CircularProgress style={{width: 24, height: 24}} /> : <RefreshIcon /> }
+        &nbsp;Retry
       </Button>
       </div>
     </div>
