@@ -1,4 +1,5 @@
-import { useFetch } from 'react-async';
+import axios from 'axios';
+import { useQuery } from 'react-query';
 
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
@@ -12,10 +13,12 @@ import Image from '../image';
 
 
 function BuildContentsInner (props) {
-  const headers = { Accept: "application/json" };
   const url = `${conf.ocs_metadata.api_url}/builds/${props.version}`;
-  const { data, error, isPending } = useFetch(url, { headers });
-  if ( isPending || error ) return null;
+  const { data, error, isLoading } = useQuery(
+    ['ocs_metadata', url],
+    () => axios.get(url).then(resp => resp.data),
+  );
+  if ( isLoading || error ) return null;
   return (
     <>
       <DialogTitle>
