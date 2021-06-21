@@ -60,15 +60,6 @@ registerRoute(
     ],
   }),
 );
-registerRoute(
-  ({url}) => url.pathname.startsWith('/job/'),
-  new StaleWhileRevalidate({
-    cacheName: 'jobData',
-    plugins: [
-      new ExpirationPlugin({ maxAgeSeconds: 60 * 5 }),
-    ],
-  }),
-);
 
 // This allows the web app to trigger skipWaiting via
 // registration.waiting.postMessage({type: 'SKIP_WAITING'})
