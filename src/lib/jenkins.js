@@ -5,6 +5,8 @@ import convert from 'xml-js';
 
 import conf from '../settings.js';
 
+axios.defaults.timeout = 2500;
+
 
 function getUrl (url) {
   if ( process.env.NODE_ENV === 'production' ) {
