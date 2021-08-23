@@ -91,7 +91,6 @@ function transformVersionList({ product, versionList, versionFilter }) {
   const maxDevBuilds =
     versionFilter === undefined ? settings.max_dev_builds || 0 : -1;
   Object.entries(versionObj).forEach(([semVer, subList]) => {
-    subList.sort().reverse();
     if (maxDevBuilds > 0) {
       versionObj[semVer] = subList.slice(0, maxDevBuilds);
     }
