@@ -8,10 +8,21 @@ import Box from "@material-ui/core/Box";
 import Link from "@material-ui/core/Link";
 import Typography from "@material-ui/core/Typography";
 
-import conf from "../../settings.js";
+import conf from "../../settings.json";
 import Image from "../image";
 
-function BuildContentsInner(props) {
+type BuildContentsInnerProps = {
+  version: string;
+}
+
+type ImageMetadata = {
+  name: string;
+  image: string;
+  tag: string;
+  nvr: string;
+}
+
+function BuildContentsInner(props: BuildContentsInnerProps) {
   const url = `${conf.ocs_metadata.api_url}/builds/${props.version}`;
   const { data, error, isLoading } = useQuery(["ocs_metadata", url], () =>
     axios.get(url).then((resp) => resp.data)
@@ -30,7 +41,7 @@ function BuildContentsInner(props) {
         </Link>
       </DialogTitle>
       <DialogContent>
-        {data.contents.map((item) => (
+        {data.contents.map((item: ImageMetadata) => (
           <Box
             key={item.name}
             style={{ overflow: "visible", marginBottom: 20 }}
@@ -46,7 +57,13 @@ function BuildContentsInner(props) {
   );
 }
 
-function BuildContents(props) {
+type BuildContentsProps = {
+  version: string;
+  open: boolean;
+  setOpen: Function;
+}
+
+function BuildContents(props: BuildContentsProps) {
   const { open, setOpen } = props;
   return (
     <>

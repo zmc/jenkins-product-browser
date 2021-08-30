@@ -24,11 +24,16 @@ const queryClient = new QueryClient({
   },
 });
 
-function useDarkMode() {
-  const systemDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
-  const [state, setState] = useState({ system: systemDarkMode });
+type DarkModeState = {
+  system: boolean;
+  user: boolean | undefined;
+}
 
-  function setDarkMode(value) {
+function useDarkMode(): [boolean, Function] {
+  const systemDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+  const [state, setState] = useState({ system: systemDarkMode } as DarkModeState);
+
+  function setDarkMode(value: boolean) {
     const newState = { ...state, user: value };
     if (value !== state.user) {
       setState(newState);
@@ -71,11 +76,17 @@ function Root() {
   );
 }
 
-function ErrorDisplay({ error }) {
+type ErrorDisplayProps = {
+  error: {
+    message: string;
+  }
+}
+
+function ErrorDisplay(props: ErrorDisplayProps) {
   return (
     <div role="alert">
       <p>Whoops 🤦</p>
-      <pre>{error.message}</pre>
+      <pre>{props.error.message}</pre>
     </div>
   );
 }

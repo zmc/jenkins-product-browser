@@ -3,23 +3,38 @@ import coerce from "semver/functions/coerce";
 import { useQuery, useQueries } from "react-query";
 import convert from "xml-js";
 
-import conf from "../settings.js";
+import conf from "../settings.json";
+import type { Conf, ProductConf } from "../settings.d";
+import type {
+  BuildXmlObj,
+  VersionListsResult,
+  VersionObj,
+  BuildMetadata,
+  XmlActionItem,
+  XmlNamedItem,
+  XmlTestResults,
+  XmlParameter,
+  PipelineRunData,
+  QueryFnParams,
+} from "./jenkins.d";
 
-function getUrl(url) {
+function getUrl(url: string) {
   if (process.env.NODE_ENV === "production") {
     return `${conf.jenkins.api_url}${url}`;
   }
   return url;
 }
 
-function getProductSettings(product) {
+function getProductSettings(product: string): ProductConf {
   const matches = Object.keys(conf.products).filter((key) => {
     return key.toLowerCase() === product.toLowerCase();
   });
-  if (matches.length) return conf.products[matches[0]];
+  const pName = matches[0];
+  if (matches.length) return (conf as Conf).products[pName];
+  throw new Error(`Product "${product}" not found!`);
 }
 
-async function fetchXML(url) {
+async function fetchXML(url: string) {
   return axios
     .get(url)
     .then((resp) => {
@@ -33,7 +48,10 @@ async function fetchXML(url) {
     });
 }
 
-function useVersionLists({ product, versionFilter }) {
+function useVersionLists({
+  product = "",
+  versionFilter = "",
+}): VersionListsResult {
   const productSettings = getProductSettings(product);
   const jobs = Object.keys(productSettings.jobs);
   const versionQueries = useQueries(
@@ -48,32 +66,36 @@ function useVersionLists({ product, versionFilter }) {
   const result = {
     error: versionQueries.some((item) => item.error),
     isLoading: versionQueries.some((item) => item.isLoading),
-    data: transformVersionList({
+    data: transformVersionList(
       product,
-      versionList: Array.from(
+      Array.from(
         new Set(
           versionQueries
             .filter((item) => item.isSuccess)
             .map((item) => item.data)
             .flat()
         )
-      ),
-      versionFilter,
-    }),
+      ) as string[],
+      versionFilter
+    ),
   };
   return result;
 }
 
-async function fetchVersionList(job, version_param) {
+async function fetchVersionList(job: string, version_param: string) {
   const url = getUrl(
     `/job/${job}/api/xml?tree=builds[number,actions[parameters[name,value]]]&wrapper=root&xpath=//*/build/action/parameter[name[text()='${version_param}']]/value`
   );
   return fetchXML(url).then((data) => {
-    return data.root.value.map((item) => item._text);
+    return data.root.value.map((item: any) => item._text);
   });
 }
 
-function transformVersionList({ product, versionList, versionFilter }) {
+function transformVersionList(
+  product: string,
+  versionList: string[],
+  versionFilter: string | undefined
+): string[] {
   if (versionFilter !== undefined) {
     versionList = versionList.filter((item) => {
       return item.split(":")[1].startsWith(versionFilter);
@@ -81,15 +103,19 @@ function transformVersionList({ product, versionList, versionFilter }) {
   }
   const versionObj = versionList.reduce((accumulator, currentValue) => {
     const semVer = coerce(currentValue);
-    if (accumulator[semVer] === undefined) {
-      accumulator[semVer] = [];
+    if (semVer) {
+      const semVersion = semVer.version;
+      if (accumulator[semVersion] === undefined) {
+        accumulator[semVersion] = [];
+      }
+      accumulator[semVersion].push(currentValue);
     }
-    accumulator[semVer].push(currentValue);
     return accumulator;
-  }, {});
+  }, {} as VersionObj);
   const settings = getProductSettings(product);
-  const maxDevBuilds =
-    versionFilter === undefined ? settings.max_dev_builds || 0 : -1;
+  let maxDevBuilds: number;
+  if (versionFilter === undefined) maxDevBuilds = -1;
+  else maxDevBuilds = settings.max_dev_builds || 0;
   Object.entries(versionObj).forEach(([semVer, subList]) => {
     if (maxDevBuilds > 0) {
       versionObj[semVer] = subList.slice(0, maxDevBuilds);
@@ -98,7 +124,7 @@ function transformVersionList({ product, versionList, versionFilter }) {
   return Object.values(versionObj).flat().sort().reverse();
 }
 
-function useProductBuilds({ product, version }) {
+function useProductBuilds({ product = "", version = "" }) {
   const { data, error, isLoading } = useQuery(
     ["builds", product, version],
     () => fetchProductBuilds({ product, version })
@@ -107,13 +133,13 @@ function useProductBuilds({ product, version }) {
   return { data, error, isLoading };
 }
 
-function fetchProductBuilds({ product, version }) {
+async function fetchProductBuilds({ product = "", version = "" }) {
   const productSettings = getProductSettings(product);
   const jobs = Object.keys(productSettings.jobs);
   return Promise.all(
     jobs.map(async (job) => {
       const version_param = productSettings.jobs[job].version_param;
-      return fetchBuilds({ job, version_param, version });
+      return fetchBuilds(job, version_param, version);
     })
   )
     .then((values) => {
@@ -131,7 +157,11 @@ function fetchProductBuilds({ product, version }) {
     });
 }
 
-async function fetchBuilds({ job, version_param, version }) {
+async function fetchBuilds(
+  job: string,
+  version_param: string,
+  version: string
+) {
   let url = getUrl(
     `/job/${job}/api/xml?tree=name,builds[number,actions[parameters[name,value],failCount,skipCount,totalCount,urlName],building,duration,result,timestamp]&wrapper=root&xpath=//*/build`
   );
@@ -146,10 +176,10 @@ async function fetchBuilds({ job, version_param, version }) {
   });
 }
 
-function getTestBuildMetadata(build) {
+function getTestBuildMetadata(build: BuildXmlObj): BuildMetadata {
   const number = build.number._text;
   const job = build.job;
-  const metadata = {
+  const metadata: BuildMetadata = {
     id: `${job}/${number}`,
     job: job,
     jobURL: `${conf.jenkins.url}/job/${job}`,
@@ -160,12 +190,12 @@ function getTestBuildMetadata(build) {
     duration: build.duration._text,
     parameters: getBuildParams(build),
   };
-  let testResults = build.action.filter((item) => {
+  let filteredActions: XmlActionItem[] = build.action.filter((item) => {
     if (item._attributes === undefined) return false;
     return item._attributes._class === "hudson.tasks.junit.TestResultAction";
   });
-  if (testResults.length) {
-    testResults = testResults[0];
+  if (filteredActions.length) {
+    const testResults = filteredActions[0] as XmlTestResults;
     metadata.testResults = {
       fail: testResults.failCount._text,
       skip: testResults.skipCount._text,
@@ -180,10 +210,15 @@ function getTestBuildMetadata(build) {
   return metadata;
 }
 
-function usePipelineRunData({ job, build, status, version }) {
+function usePipelineRunData(
+  job: string,
+  build: number,
+  status: string,
+  version: string
+): PipelineRunData {
   const pipelineUrl = getUrl(`/job/${job}/${build}/wfapi/`);
-  const queryFn = async ({ queryKey }) => {
-    return axios.get(queryKey[1].url).then((resp) => resp.data);
+  const queryFn = async (params: QueryFnParams) => {
+    return axios.get(params.queryKey[1].url).then((resp) => resp.data);
   };
   const fetchPipeline = status === undefined ? false : true;
   const {
@@ -199,10 +234,14 @@ function usePipelineRunData({ job, build, status, version }) {
   let stage;
   let stageUrl;
   let fetchStage = false;
-  const result = { data: {} };
+  const result: PipelineRunData = {
+    data: { name: "", consoleUrl: "" },
+    error: false,
+    isLoading: true,
+  };
   if (fetchPipeline && !isPipelineLoading) {
     stage = pipelineData.stages.filter(
-      (_stage) => _stage.status.toLowerCase() === status
+      (_stage: any) => _stage.status.toLowerCase() === status // FIXME: any
     )[0];
     if (stage !== undefined) {
       stageUrl = getUrl(stage._links.self.href);
@@ -222,24 +261,27 @@ function usePipelineRunData({ job, build, status, version }) {
   });
   if (fetchStage && !isStageLoading) {
     const node = stageData.stageFlowNodes.filter(
-      (node) => node.status.toLowerCase() === status
+      (node: any) => node.status.toLowerCase() === status // FIXME: any
     )[0];
     result.data.consoleUrl = conf.jenkins.url + "/" + node?._links.console.href;
   }
-  result.error = pipelineError || stageError;
+  result.error = (pipelineError || stageError) as boolean;
   result.isLoading = isPipelineLoading || isStageLoading;
   return result;
 }
 
-function getBuildParams(build) {
+function getBuildParams(build: BuildXmlObj) {
   const paramsAction = build.action.filter(
     (item) => item._attributes?._class === "hudson.model.ParametersAction"
-  )[0];
+  )[0] as XmlParameter;
   // If a build fails quickly enough (e.g. if the repo containing the
   // Jenkinsfile can't be cloned) we may not have a ParametersAction
   if (paramsAction === undefined) return {};
   const result = Object.fromEntries(
-    paramsAction?.parameter.map((item) => [item.name._text, item.value._text])
+    paramsAction?.parameter.map((item: XmlNamedItem<string>) => [
+      item.name._text,
+      item.value._text,
+    ])
   );
   return result;
 }

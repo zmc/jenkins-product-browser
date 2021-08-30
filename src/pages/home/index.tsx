@@ -5,8 +5,13 @@ import Typography from "@material-ui/core/Typography";
 
 import conf from "../../settings";
 import { getProductSettings } from "../../lib/jenkins";
+import type { Conf } from "../../settings";
 
-function ProductCard(props) {
+type ProductCardProps = {
+  name: string;
+}
+
+function ProductCard(props: ProductCardProps) {
   const jobs = Object.keys(getProductSettings(props.name).jobs);
   return (
     <Card style={{ minWidth: 275, padding: "10px" }} key={props.name}>
@@ -19,7 +24,7 @@ function ProductCard(props) {
           return (
             <span style={{ padding: "0 5px" }} key={item}>
               <Link
-                href={`${conf.jenkins.url}/job/${item}`}
+                href={`${(conf as Conf).jenkins.url}/job/${item}`}
                 target="_blank"
                 key={item}
               >
@@ -40,7 +45,7 @@ function ProductCard(props) {
 }
 
 export default function Home() {
-  const products = Object.keys(conf.products);
+  const products = Object.keys((conf as Conf).products);
   return (
     <>
       <Typography variant="h3" style={{ textAlign: "center", margin: "20px" }}>

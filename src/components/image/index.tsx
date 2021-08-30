@@ -1,8 +1,12 @@
 import Typography from "@material-ui/core/Typography";
 import Link from "@material-ui/core/Link";
 
-function Image(props) {
-  const getImageUrl = (image) => {
+type ImageProps = {
+  data: string;
+}
+
+function Image(props: ImageProps) {
+  const getImageUrl = (image: string) => {
     const imageParts = image.split("/");
     if (imageParts[0] === "quay.io") {
       var url = `https://${imageParts[0]}/repository/${imageParts[1]}`;
