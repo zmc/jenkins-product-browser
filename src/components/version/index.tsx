@@ -10,9 +10,14 @@ import Refresh from "@material-ui/icons/Refresh";
 import BuildContents from "../build_contents";
 import VersionDataGrid from "../version_datagrid";
 import styles from "./style.module.css";
+import type { URLParams } from "../../App.d";
 
-function Version(props) {
-  const { product } = useParams();
+type VersionProps = {
+  value: string;
+}
+
+function Version(props: VersionProps) {
+  const { product } = useParams() as URLParams;
   const [contentsOpen, setContentsOpen] = useState(false);
   const queryClient = useQueryClient();
   const short_version = props.value.split(":")[1];

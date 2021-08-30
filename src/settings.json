@@ -1,0 +1,25 @@
+{
+  "jenkins": {
+    "url":
+      "https://ceph-downstream-jenkins-csb-storage.apps.ocp4.prod.psi.redhat.com/",
+    "api_url":
+      "https://reverse-proxy-jenkins-product-browser.apps.ocp4.prod.psi.redhat.com",
+    "max_builds": 0
+  },
+  "ocs_metadata": {
+    "api_url": "https://ocs-metadata.int.open.paas.redhat.com/"
+  },
+  "products": {
+    "OCS": {
+      "max_dev_builds": 1,
+      "jobs": {
+        "ocs-ci": {
+          "version_param": "OCS_REGISTRY_IMAGE"
+        },
+        "ocs-ci-kvm": {
+          "version_param": "OCS_REGISTRY_IMAGE"
+        }
+      }
+    }
+  }
+}
