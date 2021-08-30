@@ -33,6 +33,7 @@
     "xml-js": "^1.6.11"
   },
   "devDependencies": {
+    "@types/react-router-dom": "^5.1.8",
     "@types/semver": "^7.3.8",
     "react-scripts": "^4.0.3"
   },
