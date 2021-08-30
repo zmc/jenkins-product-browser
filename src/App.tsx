@@ -1,3 +1,4 @@
+import { MouseEventHandler } from "react";
 import { Switch, Route, Link as RouterLink } from "react-router-dom";
 import AppBar from "@material-ui/core/AppBar";
 import IconButton from "@material-ui/core/IconButton";
@@ -8,12 +9,13 @@ import Brightness7Icon from "@material-ui/icons/Brightness7";
 import Link from "@material-ui/core/Link";
 import GitHubIcon from "@material-ui/icons/GitHub";
 
+import type { AppProps, CrumbsProps } from "./App.d";
 import "./App.css";
 import Home from "./pages/home";
 import Product from "./pages/product";
 import BuildList from "./pages/builds";
 
-function Bar(props) {
+function Bar(props: AppProps) {
   return (
     <AppBar position="static">
       <div
@@ -32,7 +34,7 @@ function Bar(props) {
           </Route>
         </div>
         <div style={{ textAlign: "end" }}>
-          <IconButton onClick={props.toggleDarkMode}>
+          <IconButton onClick={props.toggleDarkMode as MouseEventHandler}>
             {props.darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
           </IconButton>
           <Link
@@ -50,7 +52,7 @@ function Bar(props) {
   );
 }
 
-function Crumbs(props) {
+function Crumbs(props: CrumbsProps) {
   const pathnames = props.location.pathname.split("/").filter((x) => x);
   return (
     <Breadcrumbs arial-label="breadcrumb">
@@ -74,7 +76,7 @@ function Crumbs(props) {
   );
 }
 
-function App(props) {
+function App(props: AppProps) {
   return (
     <div className="App">
       <Bar {...props} />
