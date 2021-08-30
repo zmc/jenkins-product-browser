@@ -8,7 +8,7 @@ import Box from "@material-ui/core/Box";
 import Link from "@material-ui/core/Link";
 import Typography from "@material-ui/core/Typography";
 
-import conf from "../../settings.js";
+import conf from "../../settings.json";
 import Image from "../image";
 
 function BuildContentsInner(props) {

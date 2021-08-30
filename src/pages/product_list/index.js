@@ -1,4 +1,4 @@
-import conf from "../../settings.js";
+import conf from "../../settings";
 
 export default function ProductList() {
   if (conf.products === undefined) {

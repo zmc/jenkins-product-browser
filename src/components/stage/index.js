@@ -8,12 +8,12 @@ function Stage(props) {
     running: "in_progress",
     aborted: "aborted",
   };
-  const { data, error, isLoading } = usePipelineRunData({
-    job: props.job,
-    build: props.build,
-    status: statuses[props.status],
-    version: props.version,
-  });
+  const { data, error, isLoading } = usePipelineRunData(
+    props.job,
+    props.build,
+    statuses[props.status],
+    props.version
+  );
   if (error) {
     console.error(error);
     return null;
