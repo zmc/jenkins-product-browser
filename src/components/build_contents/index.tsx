@@ -11,7 +11,11 @@ import Typography from "@material-ui/core/Typography";
 import conf from "../../settings.json";
 import Image from "../image";
 
-function BuildContentsInner(props) {
+type BuildContentsInnerProps = {
+  version: string;
+}
+
+function BuildContentsInner(props: BuildContentsInnerProps) {
   const url = `${conf.ocs_metadata.api_url}/builds/${props.version}`;
   const { data, error, isLoading } = useQuery(["ocs_metadata", url], () =>
     axios.get(url).then((resp) => resp.data)
@@ -46,7 +50,13 @@ function BuildContentsInner(props) {
   );
 }
 
-function BuildContents(props) {
+type BuildContentsProps = {
+  version: string;
+  open: boolean;
+  setOpen: Function;
+}
+
+function BuildContents(props: BuildContentsProps) {
   const { open, setOpen } = props;
   return (
     <>
