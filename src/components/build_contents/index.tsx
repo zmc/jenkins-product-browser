@@ -15,6 +15,13 @@ type BuildContentsInnerProps = {
   version: string;
 }
 
+type ImageMetadata = {
+  name: string;
+  image: string;
+  tag: string;
+  nvr: string;
+}
+
 function BuildContentsInner(props: BuildContentsInnerProps) {
   const url = `${conf.ocs_metadata.api_url}/builds/${props.version}`;
   const { data, error, isLoading } = useQuery(["ocs_metadata", url], () =>
@@ -34,7 +41,7 @@ function BuildContentsInner(props: BuildContentsInnerProps) {
         </Link>
       </DialogTitle>
       <DialogContent>
-        {data.contents.map((item) => (
+        {data.contents.map((item: ImageMetadata) => (
           <Box
             key={item.name}
             style={{ overflow: "visible", marginBottom: 20 }}
