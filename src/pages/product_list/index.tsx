@@ -1,10 +1,12 @@
 import conf from "../../settings";
+import type { Conf } from "../../settings.d";
 
 export default function ProductList() {
-  if (conf.products === undefined) {
+  const products = (conf as Conf).products;
+  if (products === undefined) {
     return <p>No products are configured!</p>;
   }
-  const product_names = Object.keys(conf.products);
+  const product_names = Object.keys(products);
   return (
     <div>
       <h1>Products</h1>
