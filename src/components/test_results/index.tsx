@@ -1,7 +1,14 @@
 import GridLink from "../grid_link";
 import styles from "./style.module.css";
 
-function TestResults(props) {
+type TestResultsProps = {
+  results: {
+    [k: string]: number
+  };
+  url: string;
+}
+
+function TestResults(props: TestResultsProps) {
   const results = props.results;
   if (results === undefined) return <div />;
   const resultsString = Object.keys(results)
