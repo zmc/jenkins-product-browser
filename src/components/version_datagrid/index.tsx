@@ -98,7 +98,7 @@ const columns: GridColDef[] = [
 
 type VersionDataGridProps = {
   value?: string;
-  pageSize: number;
+  pageSize?: number;
   versionColumn: boolean
 }
 
