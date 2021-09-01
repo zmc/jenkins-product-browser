@@ -63,6 +63,21 @@ export interface PipelineRunData {
   isLoading: boolean;
 }
 
+export interface PipelineStageData {
+  durationMillis: number;
+  execNode: string;
+  id: number;
+  name: string;
+  pauseDurationMillis: number;
+  startTimeMillis: number;
+  status: string;
+}
+
+export interface PipelineStageFlowNode {
+  status: string;
+  links: { [k: string]: string };
+}
+
 export interface QueryFnParams {
   queryKey: any;
 }

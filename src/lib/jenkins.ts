@@ -15,6 +15,8 @@ import type {
   XmlTestResults,
   XmlParameter,
   PipelineRunData,
+  PipelineStageData,
+  PipelineStageFlowNode,
   QueryFnParams,
 } from "./jenkins.d";
 
@@ -241,7 +243,7 @@ function usePipelineRunData(
   };
   if (fetchPipeline && !isPipelineLoading) {
     stage = pipelineData.stages.filter(
-      (_stage: any) => _stage.status.toLowerCase() === status // FIXME: any
+      (_stage: PipelineStageData) => _stage.status.toLowerCase() === status
     )[0];
     if (stage !== undefined) {
       stageUrl = getUrl(stage._links.self.href);
@@ -261,7 +263,7 @@ function usePipelineRunData(
   });
   if (fetchStage && !isStageLoading) {
     const node = stageData.stageFlowNodes.filter(
-      (node: any) => node.status.toLowerCase() === status // FIXME: any
+      (node: PipelineStageFlowNode) => node.status.toLowerCase() === status
     )[0];
     result.data.consoleUrl = conf.jenkins.url + "/" + node?._links.console.href;
   }
